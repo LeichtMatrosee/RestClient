@@ -3,11 +3,11 @@ package client;
 import java.security.InvalidParameterException;
 
 public class PostData {
-    private String type;
-    private String listId;
-    private String name;
-    private String description;
-    private String id;
+    private String type = "";
+    private String listId = "";
+    private String name = "";
+    private String description = "";
+    private String id = "";
     private boolean successful;
 
     /**
