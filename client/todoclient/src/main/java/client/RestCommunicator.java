@@ -232,6 +232,29 @@ public class RestCommunicator {
         return data;
     }
 
+    public ResponseData getAllLists() throws IOException, URISyntaxException, InterruptedException, JSONException {
+
+        // Build the httprequest
+        HttpRequest postRequest = HttpRequest.newBuilder()
+            .uri(new URI(this.baseUrl + "/todo-list?all=true"))
+            .header("Content-Type", "application/json")
+            .GET()
+            .build();
+
+        // Build the client for posting
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        // Post the http request
+        HttpResponse<String> response = httpClient.send(postRequest, BodyHandlers.ofString());
+        
+        // Deserialize the json string to an object
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String,Object> map = mapper.readValue(response.body(), Map.class);
+
+        ResponseData data = new ResponseData(map);
+        return data;
+    }
+
     /**
      * 
      * @param p
