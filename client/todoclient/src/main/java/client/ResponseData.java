@@ -7,10 +7,10 @@ import java.util.LinkedHashMap;
 public class ResponseData {
 
     public class EntryData {
-        private String name;
-        private String id;
-        private String description;
-        private String listId;
+        private String name = "";
+        private String id = "";
+        private String description = "";
+        private String listId = "";
 
         public EntryData() {}
 
@@ -46,13 +46,11 @@ public class ResponseData {
 
             for (int i = 0; i < rEntries.size(); i++) {
                 this.entries[i] = new EntryData();
-                this.entries[i].setId(rEntries.get(i).get("id"));
-                this.entries[i].setName(rEntries.get(i).get("name"));
-                this.entries[i].setDescription(rEntries.get(i).get("description"));
-
-                if (rEntries.get(i).get("list_id") != null) {
-                    this.entries[i].setListId(rEntries.get(i).get("list_id"));
-                }
+                
+                if (rEntries.get(i).get("id") != null)          this.entries[i].setId(rEntries.get(i).get("id"));
+                if (rEntries.get(i).get("name") != null)        this.entries[i].setName(rEntries.get(i).get("name"));
+                if (rEntries.get(i).get("description") != null) this.entries[i].setDescription(rEntries.get(i).get("description"));
+                if (rEntries.get(i).get("list_id") != null)     this.entries[i].setListId(rEntries.get(i).get("list_id"));
             }
         }
 

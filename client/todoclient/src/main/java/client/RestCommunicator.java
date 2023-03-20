@@ -3,6 +3,7 @@ package client;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import org.json.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 
 public class RestCommunicator {
     private String host = "localhost";
@@ -101,10 +103,11 @@ public class RestCommunicator {
     public ResponseData searchList(PostData p) throws JSONException, IOException, URISyntaxException, InterruptedException {
         if (p.getName().equals("")) throw new IOException("Must give name!");
 
-        
+        String url = this.baseUrl + "/search?name=" + URLEncoder.encode(p.getName(), "UTF-8");
+
         // Build the httprequest
         HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(new URI(this.baseUrl + "/search?name=" + p.getName()))
+            .uri(new URI(url))
             .header("Content-Type", "application/json")
             .GET()
             .build();
@@ -119,6 +122,112 @@ public class RestCommunicator {
         ObjectMapper mapper = new ObjectMapper();
         Map<String,Object> map = mapper.readValue(response.body(), Map.class);
         
+        ResponseData data = new ResponseData(map);
+        return data;
+    }
+
+    public ResponseData deleteList(PostData p) throws IOException, URISyntaxException, InterruptedException, JSONException {
+        if (p.getListId().equals("")) throw new IOException("Must give list id!");
+
+        // Build the httprequest
+        HttpRequest postRequest = HttpRequest.newBuilder()
+            .uri(new URI(this.baseUrl + "/todo-list/" + p.getListId()))
+            .header("Content-Type", "application/json")
+            .DELETE()
+            .build();
+
+        // Build the client for posting
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        // Post the http request
+        HttpResponse<String> response = httpClient.send(postRequest, BodyHandlers.ofString());
+        
+        // Deserialize the json string to an object
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String,Object> map = mapper.readValue(response.body(), Map.class);
+
+        ResponseData data = new ResponseData(map);
+        return data;
+    }
+
+    public ResponseData addEntryToList(PostData p) throws IOException, URISyntaxException, InterruptedException, JSONException {
+        if (p.getListId().equals("")) throw new IOException("Must give list id!");
+        if (p.getName().equals("")) throw new IOException("Must give name!");
+
+        JSONObject jObj = this.bodyBuilder(p, "list");
+
+
+        // Build the httprequest
+        HttpRequest postRequest = HttpRequest.newBuilder()
+            .uri(new URI(this.baseUrl + "/entry"))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(jObj.toString()))
+            .build();
+
+        // Build the client for posting
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        // Post the http request
+        HttpResponse<String> response = httpClient.send(postRequest, BodyHandlers.ofString());
+        
+        // Deserialize the json string to an object
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String,Object> map = mapper.readValue(response.body(), Map.class);
+
+        ResponseData data = new ResponseData(map);
+        return data;
+    }
+
+    public ResponseData updateEntry(PostData p) throws IOException, URISyntaxException, InterruptedException, JSONException {
+        if (p.getListId().equals("")) throw new IOException("Must give list id!");
+        if (p.getEntryId().equals("")) throw new IOException("Must give EntryId!");
+
+        JSONObject jObj = this.bodyBuilder(p, "entry");
+
+
+        // Build the httprequest
+        HttpRequest postRequest = HttpRequest.newBuilder()
+            .uri(new URI(this.baseUrl + "/entry/" + p.getListId() + "/" + p.getEntryId()))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(jObj.toString()))
+            .build();
+
+        // Build the client for posting
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        // Post the http request
+        HttpResponse<String> response = httpClient.send(postRequest, BodyHandlers.ofString());
+        
+        // Deserialize the json string to an object
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String,Object> map = mapper.readValue(response.body(), Map.class);
+
+        ResponseData data = new ResponseData(map);
+        return data;
+    }
+
+    public ResponseData deleteEntry(PostData p) throws IOException, URISyntaxException, InterruptedException, JSONException {
+        if (p.getListId().equals("")) throw new IOException("Must give list id!");
+        if (p.getEntryId().equals("")) throw new IOException("Must give EntryId!");
+
+
+        // Build the httprequest
+        HttpRequest postRequest = HttpRequest.newBuilder()
+            .uri(new URI(this.baseUrl + "/entry/" + p.getListId() + "/" + p.getEntryId()))
+            .header("Content-Type", "application/json")
+            .DELETE()
+            .build();
+
+        // Build the client for posting
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        // Post the http request
+        HttpResponse<String> response = httpClient.send(postRequest, BodyHandlers.ofString());
+        
+        // Deserialize the json string to an object
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String,Object> map = mapper.readValue(response.body(), Map.class);
+
         ResponseData data = new ResponseData(map);
         return data;
     }
@@ -148,6 +257,12 @@ public class RestCommunicator {
             jObj.put("description", p.getDescription());
         } else {
             jObj.put("description", "");
+        }
+
+        if (p.getEntryId().equals("")) {
+            jObj.put("entry_id", p.getEntryId());
+        } else {
+            jObj.put("entry_id", p.getEntryId());
         }
 
         return jObj;

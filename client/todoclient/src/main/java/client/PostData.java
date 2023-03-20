@@ -8,7 +8,8 @@ public class PostData {
     private String name = "";
     private String description = "";
     private String id = "";
-    private boolean successful;
+    private boolean successful = false;
+    private String entryId = "";
 
     /**
      * @constructor
@@ -25,10 +26,6 @@ public class PostData {
             throw new InvalidParameterException("Type must either be list or entry, was " + type + " instead.");
         }
         this.type = type;
-
-        if (name == "") {
-            throw new InvalidParameterException("Name can't be empty.");
-        }
         this.name = name;
         this.description = description;
 
@@ -50,10 +47,6 @@ public class PostData {
             throw new InvalidParameterException("Type must either be list or entry, was " + type + " instead.");
         }
         this.type = type;
-
-        if (name == "") {
-            throw new InvalidParameterException("Name can't be empty.");
-        }
         this.name = name;
 
         this.description = description;
@@ -65,6 +58,28 @@ public class PostData {
         this.name = name;
         this.description = "";
         this.listId = "";
+    }
+
+    public PostData(String listId, String entryId, String name, String description, String type) throws InvalidParameterException {
+        if (type != "list" && type != "entry") {
+            throw new InvalidParameterException("Type must either be list or entry, was " + type + " instead.");
+        }
+        this.type = type;
+
+        this.name = name;
+        this.description = description;
+
+        if (listId == "" && type == "entry") {
+            throw new InvalidParameterException("ListId cannot be empty when pushing new entries for a list.");
+        }
+
+        if (entryId.equals("")) {
+            throw new InvalidParameterException("I made this constructor specifically for one endpoint, where you need an entry Id. "
+                + "Give me one or use a different constructor for crying out loud."
+            );
+        }
+        this.listId = listId;
+        this.entryId = entryId;
     }
 
 
@@ -86,4 +101,7 @@ public class PostData {
 
     public void setSuccessful(boolean success) { this.successful = success; }
     public boolean getSuccessful() { return this.successful; }
+
+    public void setEntryId(String entryId) { this.entryId = entryId; }
+    public String getEntryId() { return this.entryId; }
 }

@@ -3,13 +3,15 @@ package client;
 public class App {
     public static void main( String[] args ) throws Exception {
         RestCommunicator rc = new RestCommunicator("localhost", 5000);
-        PostData pd = new PostData("list", "Testing Java Posts", "Hello World", "f5b8b2f8-4858-4786-a73d-4d4c2d847ffb");
 
-        ResponseData rd = rc.addNewList(pd);
+        ResponseData rd = rc.addNewList(new PostData("list", "datenbanken bei korte", "Hello World"));
         System.out.println(rd.getEntries()[0].getId());
-
-        rd = rc.getEntriesFromList(new PostData("entry", "This is an entry", "Describing is a nice thing", rd.getEntries()[0].getId()));
+        
+        rd = rc.getEntriesFromList(new PostData("entry", "This is an entry", "Describing is a nice thing", "e636406e-c762-4e98-baac-8bb13c58116b"));
         System.out.println(rd.getEntries()[0].getName());
 
+        rd = rc.searchList(new PostData("list", "Datenbanken bei Korte"));
+
+        System.out.println(rd.getEntries().length);
     }
 }
