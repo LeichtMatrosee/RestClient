@@ -201,14 +201,19 @@ public class RestCommunicator {
         return data;
     }
 
+    /**
+     * @brief 
+     * 
+     * @return
+     * @throws IOException
+     * @throws URISyntaxException
+     * @throws InterruptedException
+     * @throws JSONException
+     */
     public ResponseData getAllLists() throws IOException, URISyntaxException, InterruptedException, JSONException {
 
         // Build the httprequest
-        HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(new URI(this.baseUrl + "/todo-list?all=true"))
-            .header("Content-Type", "application/json")
-            .GET()
-            .build();
+        HttpRequest postRequest = this.buildHttpRequest(new PostData("list", ""), "getAllLists");
 
         // Build the client for posting
         HttpClient httpClient = HttpClient.newHttpClient();
@@ -224,61 +229,95 @@ public class RestCommunicator {
         return data;
     }
 
+    /**
+     * @brief Analyses the Config to find the endpoint with the given name and returns that.
+     * 
+     * @param endpointName Name of the endpoint (set in config)
+     * @return JSONObject with all information about the found endpoint
+     * @throws JSONException Throws, when no endpoint with given name could be found
+     */
     private JSONObject getEndPoint(String endpointName) throws JSONException {
         JSONObject endPoint = null;
         
+        // Iterate through all endpoints in config
         for (int i = 0; i < this.cfg.getJSONArray("endpoints").length(); i++) {
             JSONObject currEp = this.cfg.getJSONArray("endpoints").getJSONObject(i);
+            
+            // If name of the endpoint matches given endpoint name, save that object and break loop
             if (currEp.get("name").toString().equals(endpointName)) {
                 endPoint = currEp;
                 break;
             }
         }
 
-        if (endPoint == null) throw new JSONException("Could not find enpoint search in config");
+        // Check, if an endpoint has been found and throw exception, if not.
+        if (endPoint == null) throw new JSONException("Could not find enpoint " +  endpointName + " in config");
 
         return endPoint;
     }
 
+    /**
+     * @brief Builds the url of the endpoint by analysing the endpoint config (epCfg) and PostData (p).
+     * Iterates through array "plch" in config to replace all placeholders in endpoint url with the corresponding
+     * values from the PostData object.
+     * Iterates through the array "url" to set all url params. If a param in the config matches one of the PostData params,
+     * it gets added to the url as a param.
+     * 
+     * @param epCfg Configuration of current endpoint
+     * @param p Data to be posted
+     * @return Url of the endpoint
+     * @throws JSONException Gets thrown, whenever a key is trying to be accessed, that does not exist in the config
+     * @throws IOException Gets thrown, when a param in the config cannot be resolved to a field in PostData object
+     */
     private String buildEnpointUrl(JSONObject epCfg, PostData p) throws JSONException, IOException {
+        // Build the url by concatenating base endpoint url to the base url
         String url = this.baseUrl + epCfg.get("endpoint").toString();
+
+        // Get the needed config params
         JSONArray plch = epCfg.getJSONObject("params").getJSONArray("PLCH");
         JSONArray urlArr = epCfg.getJSONObject("params").getJSONArray("url");
 
+        // Iterate through all placeholders defined in config
         for (int i = 0; i < plch.length(); i++) {
             String attr = plch.getJSONObject(i).get("attr").toString();
             String value = "";
+
+            // Get the corresponding value from the postData object and encode it
             switch (attr) {
-                case "listId": value = p.getListId(); break;
-                case "id": value = p.getId(); break;
-                case "type": value = p.getType(); break;
-                case "description": p.getDescription(); break;
-                case "name": value = p.getName(); break;
-                case "entryId": value = p.getEntryId(); break; 
+                case "listId": value = URLEncoder.encode(p.getListId(), "UTF-8"); break;
+                case "id": value = URLEncoder.encode(p.getId(), "UTF-8"); break;
+                case "type": value = URLEncoder.encode(p.getType(), "UTF-8"); break;
+                case "description": value = URLEncoder.encode(p.getDescription(), "UTF-8"); break;
+                case "name": value = URLEncoder.encode(p.getName(), "UTF-8"); break;
+                case "entryId": value = URLEncoder.encode(p.getEntryId(), "UTF-8"); break; 
                 default: throw new IOException("Could not resolve " + attr + " to a type in PostData.");
             }
 
             if (value == "") throw new IOException("No value for " + attr + " given.");
 
+            // Replace the placeholder in the url string with the correct value
             url = url.replace(
                 plch.getJSONObject(i).get("plch").toString(), 
                 value
             );
         }
 
+        // Check, if url params are needed and add a ? to the end of the url, in order to set all query params
         if (urlArr.length() > 0) url += "?";
 
+        // Iterate through all url query params
         for (int i = 0; i < urlArr.length(); i++) {
             if (i > 0) {
                 url += "&";
             }
+            // Basically the same mechanism as before. Look at previous comments
             String attr = urlArr.get(i).toString();
             String value = "";
             switch (attr) {
                 case "listId": value = URLEncoder.encode(p.getListId(), "UTF-8"); break;
                 case "id": value = URLEncoder.encode(p.getId(), "UTF-8"); break;
                 case "type": value = URLEncoder.encode(p.getType(), "UTF-8"); break;
-                case "description": URLEncoder.encode(p.getDescription(), "UTF-8"); break;
+                case "description": value = URLEncoder.encode(p.getDescription(), "UTF-8"); break;
                 case "name": value = URLEncoder.encode(p.getName(), "UTF-8"); break;
                 case "entryId": value = URLEncoder.encode(p.getEntryId(), "UTF-8"); break; 
                 default: throw new IOException("Could not resolve " + attr + " to a type in PostData.");
@@ -286,6 +325,7 @@ public class RestCommunicator {
 
             if (value == "") throw new IOException("No value for attr " + attr + " given.");
 
+            // Add query param to url
             url += "" + attr + "=" + value;
         }
 
@@ -293,42 +333,64 @@ public class RestCommunicator {
     }
 
     /**
+     * @brief Builds the JSON Object for the Body for Post and Put requests
      * 
-     * @param p
-     * @param entity
-     * @return
-     * @throws JSONException
-     * @throws IOException
+     * @param p Object containing all data for the Post Request
+     * @param entity Either "List" or "entry"
+     * @param epCfg Configuration of current endpoint
+     * @return JSONObject containing all key value pairs for the body of the post request
+     * @throws JSONException Is thrown, when a key in JSONObject is accessed, that does not exist
      */
     private JSONObject bodyBuilder(PostData p, String entity, JSONObject epCfg) throws JSONException, IOException {
+        // Get all params for the body
         JSONArray bodyParams = epCfg.getJSONObject("params").getJSONArray("body");
+        
+        // Put the entity into the body
         JSONObject jObj = new JSONObject()
             .put("entity", entity);
 
+        // Iterate through all body params in config
         for (int i = 0; i < bodyParams.length(); i++) {
+            // Get the name of the attribute from config
             String attr = bodyParams.get(i).toString();
 
+            // Put the param from the PostData object into body for request or throw IOException, if attribute doesn't match type.
             switch (attr) {
                 case "name": jObj.put("name", p.getName()); break;
                 case "listId": jObj.put("list_id", p.getListId()); break;
                 case "description": jObj.put("description", p.getDescription()); break;
                 case "entryId": jObj.put("entry_id", p.getEntryId()); break;
-                default: break;
+                default: throw new IOException("Attr " + attr + " does not match a type in PostData object");
             }
         }
 
         return jObj;
     }
 
+    /**
+     * @brief Builds the HttpRequest Object for the Request, depending on the config
+     * 
+     * @param p Object containing all relevant information for the request
+     * @param epName Name of the endpoint (must match endpoint in config)
+     * @return Complete HttpRequest object, that can be sent to API
+     * @throws JSONException Is thrown, when a key in JSONObject is accessed, that does not exist
+     * @throws URISyntaxException Is thrown, when the URI for the request is invalid (invalid characters in url and such)
+     * @throws IOException Is thrown, when no method or content type is found in config
+     */
     private HttpRequest buildHttpRequest(PostData p, String epName) throws JSONException, URISyntaxException, IOException {
+        // Get endpoint config and build endpoint url
         JSONObject endPoint = this.getEndPoint(epName);
         String url = this.buildEnpointUrl(endPoint, p);
+
+        if (endPoint.get("contentType").toString() == null || endPoint.get("contentType").toString().equals("")) 
+            throw new IOException("No Content type for endpoint " + epName + " found!");
 
         // Build the httprequest
         Builder requestBuilder = HttpRequest.newBuilder()
             .uri(new URI(url))
             .header("Content-Type", endPoint.get("contentType").toString());
 
+        // Set method on request
         switch (endPoint.get("method").toString()) {
             case "GET": requestBuilder = requestBuilder.GET(); break;
             case "POST": requestBuilder = requestBuilder.POST(HttpRequest.BodyPublishers.ofString(this.bodyBuilder(p, "list", endPoint).toString())); break;

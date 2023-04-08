@@ -136,7 +136,7 @@
         },
         {
             "name": "getAllLists",
-            "endpoint": "/todo-list",
+            "endpoint": "/todo-list?all=true",
             "method": "GET",
             "contentType": "application/json",
             "params": {
