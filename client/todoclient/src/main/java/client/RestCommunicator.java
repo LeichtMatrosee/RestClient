@@ -7,8 +7,6 @@ import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 
-import javax.imageio.IIOException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.*;
 
@@ -53,17 +51,9 @@ public class RestCommunicator {
 
     
     public ResponseData addNewList(PostData p) throws IOException, URISyntaxException, InterruptedException, JSONException {
-        // Start building the json string
-        JSONObject jObj = this.bodyBuilder(p, "list");
 
         // Build the httprequest
-        HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(new URI(this.baseUrl + "/todo-list"))
-            .header("Content-Type", "application/json")
-            .PUT(HttpRequest.BodyPublishers.ofString(jObj.toString()))
-            .build();
-
-        System.out.println(jObj.toString());
+        HttpRequest postRequest = this.buildHttpRequest(p, "addList");
         // Build the client for posting
         HttpClient httpClient = HttpClient.newHttpClient();
 
@@ -91,11 +81,7 @@ public class RestCommunicator {
         if (p.getListId().equals("")) throw new IOException("Must give list id!");
 
         // Build the httprequest
-        HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(new URI(this.baseUrl + "/todo-list/" + p.getListId() + "/entries"))
-            .header("Content-Type", "application/json")
-            .GET()
-            .build();
+        HttpRequest postRequest = this.buildHttpRequest(p, "getEntries");
 
         // Build the client for posting
         HttpClient httpClient = HttpClient.newHttpClient();
@@ -114,23 +100,7 @@ public class RestCommunicator {
     public ResponseData searchList(PostData p) throws JSONException, IOException, URISyntaxException, InterruptedException {
         if (p.getName().equals("")) throw new IOException("Must give name!");
 
-        JSONObject endPoint = this.getEndPoint("search");
-        String url = this.buildEnpointUrl(endPoint, p);
-
-        // Build the httprequest
-        Builder requestBuilder = HttpRequest.newBuilder()
-            .uri(new URI(url))
-            .header("Content-Type", endPoint.get("contentType").toString());
-
-        switch (endPoint.get("method").toString()) {
-            case "GET": requestBuilder = requestBuilder.GET(); break;
-            case "POST": requestBuilder = requestBuilder.POST(HttpRequest.BodyPublishers.ofString(this.bodyBuilder(p, "list").toString())); break;
-            case "PUT": requestBuilder = requestBuilder.PUT(HttpRequest.BodyPublishers.ofString(this.bodyBuilder(p, "list").toString())); break;
-            case "DELETE": requestBuilder = requestBuilder.DELETE(); break;
-            default: throw new IOException("No method found!");
-        }
-
-        HttpRequest postRequest = requestBuilder.build();
+        HttpRequest postRequest = this.buildHttpRequest(p, "search");
 
         // Build the client for posting
         HttpClient httpClient = HttpClient.newHttpClient();
@@ -150,11 +120,7 @@ public class RestCommunicator {
         if (p.getListId().equals("")) throw new IOException("Must give list id!");
 
         // Build the httprequest
-        HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(new URI(this.baseUrl + "/todo-list/" + p.getListId()))
-            .header("Content-Type", "application/json")
-            .DELETE()
-            .build();
+        HttpRequest postRequest = this.buildHttpRequest(p, "deleteList");
 
         // Build the client for posting
         HttpClient httpClient = HttpClient.newHttpClient();
@@ -174,15 +140,9 @@ public class RestCommunicator {
         if (p.getListId().equals("")) throw new IOException("Must give list id!");
         if (p.getName().equals("")) throw new IOException("Must give name!");
 
-        JSONObject jObj = this.bodyBuilder(p, "list");
-
 
         // Build the httprequest
-        HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(new URI(this.baseUrl + "/entry"))
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(jObj.toString()))
-            .build();
+        HttpRequest postRequest = this.buildHttpRequest(p, "addEntry");
 
         // Build the client for posting
         HttpClient httpClient = HttpClient.newHttpClient();
@@ -202,15 +162,8 @@ public class RestCommunicator {
         if (p.getListId().equals("")) throw new IOException("Must give list id!");
         if (p.getEntryId().equals("")) throw new IOException("Must give EntryId!");
 
-        JSONObject jObj = this.bodyBuilder(p, "entry");
-
-
         // Build the httprequest
-        HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(new URI(this.baseUrl + "/entry/" + p.getListId() + "/" + p.getEntryId()))
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(jObj.toString()))
-            .build();
+        HttpRequest postRequest = this.buildHttpRequest(p, "updateEntry");
 
         // Build the client for posting
         HttpClient httpClient = HttpClient.newHttpClient();
@@ -232,11 +185,7 @@ public class RestCommunicator {
 
 
         // Build the httprequest
-        HttpRequest postRequest = HttpRequest.newBuilder()
-            .uri(new URI(this.baseUrl + "/entry/" + p.getListId() + "/" + p.getEntryId()))
-            .header("Content-Type", "application/json")
-            .DELETE()
-            .build();
+        HttpRequest postRequest = this.buildHttpRequest(p, "deleteEntry");
 
         // Build the client for posting
         HttpClient httpClient = HttpClient.newHttpClient();
@@ -311,7 +260,7 @@ public class RestCommunicator {
 
             if (value == "") throw new IOException("No value for " + attr + " given.");
 
-            url.replace(
+            url = url.replace(
                 plch.getJSONObject(i).get("plch").toString(), 
                 value
             );
@@ -320,15 +269,18 @@ public class RestCommunicator {
         if (urlArr.length() > 0) url += "?";
 
         for (int i = 0; i < urlArr.length(); i++) {
+            if (i > 0) {
+                url += "&";
+            }
             String attr = urlArr.get(i).toString();
             String value = "";
             switch (attr) {
-                case "listId": value = p.getListId(); break;
-                case "id": value = p.getId(); break;
-                case "type": value = p.getType(); break;
-                case "description": p.getDescription(); break;
-                case "name": value = p.getName(); break;
-                case "entryId": value = p.getEntryId(); break; 
+                case "listId": value = URLEncoder.encode(p.getListId(), "UTF-8"); break;
+                case "id": value = URLEncoder.encode(p.getId(), "UTF-8"); break;
+                case "type": value = URLEncoder.encode(p.getType(), "UTF-8"); break;
+                case "description": URLEncoder.encode(p.getDescription(), "UTF-8"); break;
+                case "name": value = URLEncoder.encode(p.getName(), "UTF-8"); break;
+                case "entryId": value = URLEncoder.encode(p.getEntryId(), "UTF-8"); break; 
                 default: throw new IOException("Could not resolve " + attr + " to a type in PostData.");
             }
 
@@ -348,32 +300,44 @@ public class RestCommunicator {
      * @throws JSONException
      * @throws IOException
      */
-    private JSONObject bodyBuilder(PostData p, String entity) throws JSONException, IOException {
+    private JSONObject bodyBuilder(PostData p, String entity, JSONObject epCfg) throws JSONException, IOException {
+        JSONArray bodyParams = epCfg.getJSONObject("params").getJSONArray("body");
         JSONObject jObj = new JSONObject()
             .put("entity", entity);
 
-        if (p.getName() == "") throw new IOException("Name is empty");
-        jObj.put("name", p.getName());
+        for (int i = 0; i < bodyParams.length(); i++) {
+            String attr = bodyParams.get(i).toString();
 
-        if (p.getListId().equals("")) {
-            if (entity.equals("entry")) throw new IOException("For list entities, a listId must be given!");
-        } else {
-            jObj.put("list_id", p.getListId());
-        }
-
-        if (p.getDescription() != "") {
-            jObj.put("description", p.getDescription());
-        } else {
-            jObj.put("description", "");
-        }
-
-        if (p.getEntryId().equals("")) {
-            jObj.put("entry_id", p.getEntryId());
-        } else {
-            jObj.put("entry_id", p.getEntryId());
+            switch (attr) {
+                case "name": jObj.put("name", p.getName()); break;
+                case "listId": jObj.put("list_id", p.getListId()); break;
+                case "description": jObj.put("description", p.getDescription()); break;
+                case "entryId": jObj.put("entry_id", p.getEntryId()); break;
+                default: break;
+            }
         }
 
         return jObj;
+    }
+
+    private HttpRequest buildHttpRequest(PostData p, String epName) throws JSONException, URISyntaxException, IOException {
+        JSONObject endPoint = this.getEndPoint(epName);
+        String url = this.buildEnpointUrl(endPoint, p);
+
+        // Build the httprequest
+        Builder requestBuilder = HttpRequest.newBuilder()
+            .uri(new URI(url))
+            .header("Content-Type", endPoint.get("contentType").toString());
+
+        switch (endPoint.get("method").toString()) {
+            case "GET": requestBuilder = requestBuilder.GET(); break;
+            case "POST": requestBuilder = requestBuilder.POST(HttpRequest.BodyPublishers.ofString(this.bodyBuilder(p, "list", endPoint).toString())); break;
+            case "PUT": requestBuilder = requestBuilder.PUT(HttpRequest.BodyPublishers.ofString(this.bodyBuilder(p, "list", endPoint).toString())); break;
+            case "DELETE": requestBuilder = requestBuilder.DELETE(); break;
+            default: throw new IOException("No method found!");
+        }
+
+        return requestBuilder.build();
     }
 
     private void buildBaseUrl() {
