@@ -37,6 +37,9 @@ public class ResponseData {
 
     // Update Param
     private int entriesUpdated;
+
+    private boolean success;
+    private String message;
     
     public ResponseData (Map<String,Object> map) {
         if (map.get("entries") != null) {
@@ -68,6 +71,13 @@ public class ResponseData {
         if (map.get("entries_updated") != null) {
             this.entriesUpdated = (int) map.get("entries_updated");
         }
+
+        this.success = true;
+    }
+
+    public ResponseData(Exception e) {
+        this.success = false;
+        this.message = e.getMessage();
     }
 
     public void setEntries(EntryData[] entries) {
@@ -108,5 +118,20 @@ public class ResponseData {
         this.entriesUpdated = entriesUpdated;
     }
 
+    public boolean getSuccess() {
+        return this.success;
+    }
+
+    public void setSuccess(boolean s) {
+        this.success = s;
+    }
+
+    public String getMessage() {
+        return this.message;
+    }
+
+    public void setMessage(String msg) {
+        this.message = msg;
+    }
 
 }

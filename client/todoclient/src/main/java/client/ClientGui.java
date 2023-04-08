@@ -1,58 +1,92 @@
 package client;
 
-import java.awt.Color;
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 
-public class ClientGui{
+public class ClientGui {
 
-    // Gui Components
-    // Frame, menubar
+    // Gui Komponenten
     private JFrame frame;
-    private JMenuBar mBar;
+    private Container pane;
+    private GroupLayout gl;
+    private JButton button;
+    private JMenuBar mb;
 
-    // Menu Components
-    private JMenu config;
 
-    // Rest Communication fields
+    // Rest Komponenten
     private RestCommunicator rc;
-    private String host = "localhost";
-    private int port = 5000;
 
-    public ClientGui() {
-        // this.rc = new RestCommunicator(this.host, this.port);        
+    public ClientGui() throws Error {
+        try {
+            this.rc = new RestCommunicator();
+        } catch (Exception e) {
+            throw new Error("Could not construct the RestCommunicator!", e);
+        }
     }
 
     public void process() {
         this.buildGui();
-        this.frame.setVisible(true);
     }
 
     private void buildGui() {
-        // Build the Window
-        this.frame = new JFrame("Todo List Manager");
-        this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.frame.setSize(800, 800);
-
+        this.buildFrame();
+        this.buildPane();
         this.buildMenu();
     }
 
-    private void buildMenu() {
-        this.mBar = new JMenuBar();
-        Border mBorder = new LineBorder(Color.GRAY);
-        this.mBar.setBorder(mBorder);
-
-        this.config = new JMenu("Einstellungen");
-        this.config.add(new JMenuItem("Rest Einstellungen"));
-        
-        this.mBar.add(this.config);
-        
-        // this.frame.setMenuBar(this.mBar);
+    private void buildFrame() {
+        this.frame = new JFrame();
+        this.frame.setTitle("Todo Listen Verwaltung");
+        this.frame.setSize(800, 800);
+        this.frame.setLocale(null);
+        this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.frame.setVisible(true);
+        this.frame.setResizable(true);
     }
+
+    private void buildPane() {
+        this.pane = this.frame.getContentPane();
+        this.gl = new GroupLayout(pane);
+        this.pane.setLayout(this.gl);
+    }
+
+    private void buildMenu() {
+        this.mb = new JMenuBar();
+    }
+
+    private void buildButtons() {
+        this.button = new JButton("Bekomme alle Todo Listen");
+        this.button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ResponseData rd = getAllLists();
+                String entries = "";
+
+                for (int i = 0; i < rd.getEntries().length; i++) {
+                    entries += "" + rd.getEntries()[i].getName() + ";";
+                }
+
+                System.out.println(entries);
+            }
+        });
+        this.gl.setHorizontalGroup(gl.createSequentialGroup().addComponent(button));
+        this.gl.setVerticalGroup(gl.createSequentialGroup().addComponent(button));
+
+        this.gl.setAutoCreateContainerGaps(true);
+    }
+
+    private ResponseData getAllLists() {
+        try {
+            return this.rc.getAllLists();
+        } catch (Exception e) {
+            return new ResponseData(e);
+        }
+    }
+
 }

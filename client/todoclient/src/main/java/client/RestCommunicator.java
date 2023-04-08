@@ -51,7 +51,6 @@ public class RestCommunicator {
 
     
     public ResponseData addNewList(PostData p) throws IOException, URISyntaxException, InterruptedException, JSONException {
-
         // Build the httprequest
         HttpRequest postRequest = this.buildHttpRequest(p, "addList");
         // Build the client for posting
