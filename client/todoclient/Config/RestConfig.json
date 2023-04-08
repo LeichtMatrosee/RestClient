@@ -10,7 +10,8 @@
             "params": {
                 "url": [
                     "name"
-                ]
+                ],
+                "PLCH": []
             }
         },
         {
@@ -24,7 +25,8 @@
                 ],
                 "PLCH": [
                     {
-                        "PLCH_ID": "listId"
+                        "plch": "PLCH_ID",
+                        "attr": "listId"
                     }
                 ]
             }

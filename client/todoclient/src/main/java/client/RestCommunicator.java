@@ -3,8 +3,11 @@ package client;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
+
+import javax.imageio.IIOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.*;
@@ -110,15 +113,24 @@ public class RestCommunicator {
 
     public ResponseData searchList(PostData p) throws JSONException, IOException, URISyntaxException, InterruptedException {
         if (p.getName().equals("")) throw new IOException("Must give name!");
-        
-        String url = this.baseUrl + "/search?name=" + URLEncoder.encode(p.getName(), "UTF-8");
+
+        JSONObject endPoint = this.getEndPoint("search");
+        String url = this.buildEnpointUrl(endPoint, p);
 
         // Build the httprequest
-        HttpRequest postRequest = HttpRequest.newBuilder()
+        Builder requestBuilder = HttpRequest.newBuilder()
             .uri(new URI(url))
-            .header("Content-Type", "application/json")
-            .GET()
-            .build();
+            .header("Content-Type", endPoint.get("contentType").toString());
+
+        switch (endPoint.get("method").toString()) {
+            case "GET": requestBuilder = requestBuilder.GET(); break;
+            case "POST": requestBuilder = requestBuilder.POST(HttpRequest.BodyPublishers.ofString(this.bodyBuilder(p, "list").toString())); break;
+            case "PUT": requestBuilder = requestBuilder.PUT(HttpRequest.BodyPublishers.ofString(this.bodyBuilder(p, "list").toString())); break;
+            case "DELETE": requestBuilder = requestBuilder.DELETE(); break;
+            default: throw new IOException("No method found!");
+        }
+
+        HttpRequest postRequest = requestBuilder.build();
 
         // Build the client for posting
         HttpClient httpClient = HttpClient.newHttpClient();
@@ -261,6 +273,71 @@ public class RestCommunicator {
 
         ResponseData data = new ResponseData(map);
         return data;
+    }
+
+    private JSONObject getEndPoint(String endpointName) throws JSONException {
+        JSONObject endPoint = null;
+        
+        for (int i = 0; i < this.cfg.getJSONArray("endpoints").length(); i++) {
+            JSONObject currEp = this.cfg.getJSONArray("endpoints").getJSONObject(i);
+            if (currEp.get("name").toString().equals(endpointName)) {
+                endPoint = currEp;
+                break;
+            }
+        }
+
+        if (endPoint == null) throw new JSONException("Could not find enpoint search in config");
+
+        return endPoint;
+    }
+
+    private String buildEnpointUrl(JSONObject epCfg, PostData p) throws JSONException, IOException {
+        String url = this.baseUrl + epCfg.get("endpoint").toString();
+        JSONArray plch = epCfg.getJSONObject("params").getJSONArray("PLCH");
+        JSONArray urlArr = epCfg.getJSONObject("params").getJSONArray("url");
+
+        for (int i = 0; i < plch.length(); i++) {
+            String attr = plch.getJSONObject(i).get("attr").toString();
+            String value = "";
+            switch (attr) {
+                case "listId": value = p.getListId(); break;
+                case "id": value = p.getId(); break;
+                case "type": value = p.getType(); break;
+                case "description": p.getDescription(); break;
+                case "name": value = p.getName(); break;
+                case "entryId": value = p.getEntryId(); break; 
+                default: throw new IOException("Could not resolve " + attr + " to a type in PostData.");
+            }
+
+            if (value == "") throw new IOException("No value for " + attr + " given.");
+
+            url.replace(
+                plch.getJSONObject(i).get("plch").toString(), 
+                value
+            );
+        }
+
+        if (urlArr.length() > 0) url += "?";
+
+        for (int i = 0; i < urlArr.length(); i++) {
+            String attr = urlArr.get(i).toString();
+            String value = "";
+            switch (attr) {
+                case "listId": value = p.getListId(); break;
+                case "id": value = p.getId(); break;
+                case "type": value = p.getType(); break;
+                case "description": p.getDescription(); break;
+                case "name": value = p.getName(); break;
+                case "entryId": value = p.getEntryId(); break; 
+                default: throw new IOException("Could not resolve " + attr + " to a type in PostData.");
+            }
+
+            if (value == "") throw new IOException("No value for attr " + attr + " given.");
+
+            url += "" + attr + "=" + value;
+        }
+
+        return url;
     }
 
     /**
