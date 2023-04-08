@@ -28,7 +28,6 @@ public class ResponseData {
 
     }
     
-    // Insert Params and Select
     private EntryData[] entries;
     private int written;
     private int total;

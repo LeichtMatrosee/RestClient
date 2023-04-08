@@ -1,0 +1,33 @@
+{
+    "host": "localhost",
+    "port": "6000",
+    "endpoints": [
+        {
+            "name": "search",
+            "endpoint": "/search",
+            "method": "GET",
+            "contentType": "application/json",
+            "params": {
+                "url": [
+                    "name"
+                ]
+            }
+        },
+        {
+            "name": "getEntries",
+            "endpoint": "/todo-list/PLCH_ID/entries",
+            "method": "GET",
+            "contentType": "application/json",
+            "params": {
+                "url": [
+
+                ],
+                "PLCH": [
+                    {
+                        "PLCH_ID": "listId"
+                    }
+                ]
+            }
+        }
+    ]
+}

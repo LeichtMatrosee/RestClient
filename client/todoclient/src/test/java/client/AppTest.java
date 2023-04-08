@@ -23,7 +23,7 @@ public class AppTest {
 
     private boolean restWrapper() {
         try {
-            RestCommunicator rc = new RestCommunicator("localhost", 5000);
+            RestCommunicator rc = new RestCommunicator();
 
             ResponseData rd = rc.addNewList(new PostData("list", "Rest Test", "description for Rest Test"));
 

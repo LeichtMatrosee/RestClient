@@ -26,7 +26,7 @@ public class ClientGui{
     private int port = 5000;
 
     public ClientGui() {
-        this.rc = new RestCommunicator(this.host, this.port);        
+        // this.rc = new RestCommunicator(this.host, this.port);        
     }
 
     public void process() {

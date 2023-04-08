@@ -3,40 +3,48 @@ package client;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.*;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 
 public class RestCommunicator {
     private String host = "localhost";
-    private int port = 5000;
+    private int port = 6000;
     private String baseUrl;
+    private JSONObject cfg;
 
-    public RestCommunicator(String host, int port) {
-        this.host = host;
-        this.port = port;
-        this.baseUrl = "http://" + this.host + ":" + this.port;
-    }
-    
-    public RestCommunicator(String host) {
-        this.host = host;
-        this.baseUrl = "http://" + this.host + ":" + this.port;
-    }
+    public RestCommunicator() throws FileNotFoundException, IOException, JSONException {
+        // Get Config file
+        File cfgFile = new File("" + System.getProperty("user.dir") + "\\Config\\RestConfig.json");
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(cfgFile)));
+        
+        // Read the whole config file to a string, in order to later serialize it into a JSONObject
+        String cfgString = "";
+        String line = br.readLine();
 
-    public RestCommunicator(int port) {
-        this.port = port;
-        this.baseUrl = "http://" + this.host + ":" + this.port;
-    }
+        while (line != null) {
+            cfgString += line;
+            line = br.readLine();
+        }
 
-    public RestCommunicator() { 
+        br.close();
+
+        this.cfg = new JSONObject(cfgString);
+
+        this.host = this.cfg.get("host").toString();
+        this.port = Integer.parseInt(this.cfg.get("port").toString());
         this.baseUrl = "http://" + this.host + ":" + this.port;
     }
 
@@ -102,7 +110,7 @@ public class RestCommunicator {
 
     public ResponseData searchList(PostData p) throws JSONException, IOException, URISyntaxException, InterruptedException {
         if (p.getName().equals("")) throw new IOException("Must give name!");
-
+        
         String url = this.baseUrl + "/search?name=" + URLEncoder.encode(p.getName(), "UTF-8");
 
         // Build the httprequest
