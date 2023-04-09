@@ -77,9 +77,16 @@ public class ResponseData {
 
     public ResponseData(Exception e) {
         this.success = false;
-        this.message = e.getMessage();
+
+        if (e.getMessage() != null) {
+            this.message = e.getMessage();
+        } else {
+            this.message = "No further cause for exception found.";
+        }
     }
 
+    /*************** SETTERS AND GETTERS ***********************/
+    
     public void setEntries(EntryData[] entries) {
         this.entries = entries;
     }

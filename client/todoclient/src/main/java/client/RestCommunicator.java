@@ -201,7 +201,7 @@ public class RestCommunicator {
     }
 
     /**
-     * @brief 
+     * 
      * 
      * @return
      * @throws IOException
@@ -229,7 +229,7 @@ public class RestCommunicator {
     }
 
     /**
-     * @brief Analyses the Config to find the endpoint with the given name and returns that.
+     * Analyses the Config to find the endpoint with the given name and returns that.
      * 
      * @param endpointName Name of the endpoint (set in config)
      * @return JSONObject with all information about the found endpoint
@@ -256,7 +256,7 @@ public class RestCommunicator {
     }
 
     /**
-     * @brief Builds the url of the endpoint by analysing the endpoint config (epCfg) and PostData (p).
+     * Builds the url of the endpoint by analysing the endpoint config (epCfg) and PostData (p).
      * Iterates through array "plch" in config to replace all placeholders in endpoint url with the corresponding
      * values from the PostData object.
      * Iterates through the array "url" to set all url params. If a param in the config matches one of the PostData params,
@@ -332,7 +332,7 @@ public class RestCommunicator {
     }
 
     /**
-     * @brief Builds the JSON Object for the Body for Post and Put requests
+     * Builds the JSON Object for the Body for Post and Put requests
      * 
      * @param p Object containing all data for the Post Request
      * @param entity Either "List" or "entry"
@@ -367,7 +367,7 @@ public class RestCommunicator {
     }
 
     /**
-     * @brief Builds the HttpRequest Object for the Request, depending on the config
+     * Builds the HttpRequest Object for the Request, depending on the config
      * 
      * @param p Object containing all relevant information for the request
      * @param epName Name of the endpoint (must match endpoint in config)
