@@ -11,24 +11,23 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 
 public class TodoFrame implements AdjustmentListener, ActionListener {
     // GUI Components
     protected JFrame frame;
+    protected JPanel topPanel;
+    protected JPanel infoPanel;
     protected JPanel buttonPanel;
     protected JPanel listPanel;
     protected JPanel list;
     protected JList<String> entries;
     protected DefaultListModel<String> dlm;
-    protected JScrollBar listScroller;
+    protected JScrollPane listScroller;
 
     // Configuration
     private String bgColor = "green";
-
-    // Todo List Information
-    private String[] listValues;
 
     // Api Komponenten
     RestCommunicator rc;
@@ -38,9 +37,7 @@ public class TodoFrame implements AdjustmentListener, ActionListener {
             this.rc = new RestCommunicator();
         } catch (Exception e) {
             return;
-        } 
-        
-        this.listValues = new String[0];
+        }
 
         // Configure Frame
         this.frame = new JFrame();
@@ -54,7 +51,7 @@ public class TodoFrame implements AdjustmentListener, ActionListener {
         this.frame.setTitle(title);
         this.frame.setSize(600, 600);
         this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.frame.setResizable(false);
+        this.frame.setResizable(true);
         this.frame.setLayout(new BorderLayout());
 
         // Configure Panel for Buttons
@@ -74,28 +71,32 @@ public class TodoFrame implements AdjustmentListener, ActionListener {
         this.entries = new JList<String>();
         this.entries.setModel(dlm);
         this.list.add(this.entries);
+        this.entries.setLayoutOrientation(JList.VERTICAL);
 
         // Configure Scrollbar
-        this.listScroller = new JScrollBar(JScrollBar.VERTICAL);
-        this.listScroller.setMinimum(0);
-        this.listScroller.setMaximum(this.listValues.length);
-        this.listScroller.addAdjustmentListener(this);
-        
-        this.listPanel.add(this.listScroller, BorderLayout.EAST);
-
+        this.listScroller = new JScrollPane();
+        this.listScroller.setViewportView(entries);
+        this.list.add(this.listScroller, BorderLayout.CENTER);
 
         // Add entries to listPanel
         this.listPanel.add(this.list);
+
+        this.infoPanel = new JPanel();
+        this.infoPanel.setLayout(new FlowLayout());
+
+        this.topPanel = new JPanel();
+        this.topPanel.setLayout(new BorderLayout());
+
+        this.topPanel.add(this.infoPanel, BorderLayout.NORTH);
+        this.topPanel.add(this.buttonPanel, BorderLayout.SOUTH);
     
+        this.frame.add(this.topPanel, BorderLayout.NORTH);
         this.frame.add(this.listPanel);
-        this.frame.add(this.buttonPanel, BorderLayout.NORTH);
     }
 
     @Override
     public void adjustmentValueChanged(AdjustmentEvent arg0) {
-        if (arg0.getSource() == this.listScroller) {
-            System.out.println(this.listScroller.getValue());
-        }
+
     }
 
     @Override
@@ -109,14 +110,6 @@ public class TodoFrame implements AdjustmentListener, ActionListener {
 
     public void setBgColor(String bgColor) {
         this.bgColor = bgColor;
-    }
-
-    public String[] getListValues() {
-        return this.listValues;
-    }
-
-    public void setListValues(String[] listValues) {
-        this.listValues = listValues;
     }
 
 }

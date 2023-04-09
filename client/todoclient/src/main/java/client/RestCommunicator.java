@@ -228,6 +228,26 @@ public class RestCommunicator {
         return data;
     }
 
+    public boolean checkApiConnectivity() {
+        try {
+            // Build the httprequest
+            HttpRequest postRequest = this.buildHttpRequest(new PostData("list", ""), "getAllLists");
+
+            // Build the client for posting
+            HttpClient httpClient = HttpClient.newHttpClient();
+
+            // Post the http request
+            HttpResponse<String> response = httpClient.send(postRequest, BodyHandlers.ofString());
+
+            if (response.statusCode() == 200 || response.statusCode() == 202) {
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Analyses the Config to find the endpoint with the given name and returns that.
      * 

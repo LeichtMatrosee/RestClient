@@ -44,7 +44,7 @@ public class AddWindow extends JDialog implements ActionListener {
         }
         this.setSize(600, 600);
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        this.setResizable(false);
+        this.setResizable(true);
         this.setLayout(new BorderLayout());
 
         this.buttonPanel = new JPanel();
@@ -80,6 +80,7 @@ public class AddWindow extends JDialog implements ActionListener {
         this.add(this.titlePanel, BorderLayout.NORTH);
         this.add(this.buttonPanel, BorderLayout.SOUTH);
         this.add(this.editPanel);
+        this.pack();
 
         this.setVisible(true);
     }

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.swing.JButton;
+import javax.swing.JLabel;
 
 public class MainWindow extends TodoFrame {
     // Buttons for main Window
@@ -14,8 +15,10 @@ public class MainWindow extends TodoFrame {
     JButton testApi;
     JButton addList;
 
+    JLabel apiInfo;
+    JLabel errorInfo;
+
     // Config
-    String lastError;
     ArrayList<HashMap<String, String>> lists;
 
 
@@ -36,6 +39,11 @@ public class MainWindow extends TodoFrame {
 
         this.addList = new JButton("Liste hinzufügen");
         this.addList.addActionListener(this);
+
+        this.apiInfo = new JLabel();
+        this.errorInfo = new JLabel();
+        this.infoPanel.add(this.apiInfo);
+        this.infoPanel.add(this.errorInfo);
 
         this.buttonPanel.add(this.loadAllLists);
         this.buttonPanel.add(this.addList);
@@ -58,21 +66,41 @@ public class MainWindow extends TodoFrame {
             this.addLists();
         } else if (e.getSource() == this.deleteList) {
             this.deleteLists();
+        } else if (e.getSource() == this.testApi) {
+            this.checkApi();
         }
+    }
+
+    private void checkApi() {
+        boolean isWorking = this.rc.checkApiConnectivity();
+
+        if (isWorking) {
+            this.apiInfo.setText("API verfügbar");
+        } else {
+            this.apiInfo.setText("API nicht verfügbar");
+        }
+
+        return;
+    }
+
+    private void updateErrorInfo(String message) {
+        this.errorInfo.setText(message);
     }
 
     private void getAllLists() {
         ResponseData rd;
-        this.dlm.clear();
+        this.dlm.removeAllElements();
 
         try {
             rd = super.rc.getAllLists();
         } catch (Exception e) {
             if (e.getMessage() != "" && e.getMessage() != null) {
-                this.lastError = e.getMessage();
+                this.updateErrorInfo(e.getMessage());
             }
             return;
         }
+
+        this.updateErrorInfo("");
 
         for (int i = 0; i < rd.getEntries().length; i++) {
             this.lists.add(new HashMap<String,String>());
@@ -84,7 +112,7 @@ public class MainWindow extends TodoFrame {
         for (int i = 0; i < this.lists.size(); i++) {
             this.dlm.addElement(this.lists.get(i).get("name"));
         }
-        this.listScroller.setMaximum(rd.getEntries().length);
+        
         this.entries.setModel(this.dlm);
     }
 
@@ -100,7 +128,7 @@ public class MainWindow extends TodoFrame {
                 rd = super.rc.addNewList(new PostData("list", name, description));
             } catch (Exception e) {
                 if (!e.getMessage().equals("") || e.getMessage() != null) {
-                    this.lastError = e.getMessage();
+                    this.updateErrorInfo(e.getMessage());
                 }
                 return;
             }
@@ -108,8 +136,15 @@ public class MainWindow extends TodoFrame {
             return;
         }
 
-        this.dlm.addElement(rd.getEntries()[0].getName());
-        this.entries.setModel(this.dlm);
+        this.updateErrorInfo("");
+
+        HashMap<String,String> newEntry = new HashMap<String, String>();
+        newEntry.put("name", rd.getEntries()[0].getName());
+        newEntry.put("id", rd.getEntries()[0].getId());
+        newEntry.put("description", rd.getEntries()[0].getDescription());
+        this.lists.add(newEntry);
+
+        this.updateDlm();
     }
 
     private void deleteLists() {
@@ -121,11 +156,21 @@ public class MainWindow extends TodoFrame {
             super.rc.deleteList(new PostData("list", "", "", idToDelete));
         } catch (Exception e) {
             if (!e.getMessage().equals("") || e.getMessage() != null) {
-                this.lastError = e.getMessage();
+                this.updateErrorInfo(e.getMessage());
             }
             return;
         }
 
-        this.getAllLists();
+        this.lists.remove(index);
+        this.updateErrorInfo("");
+        this.updateDlm();
+    }
+
+    private void updateDlm() {
+        this.dlm.removeAllElements();
+
+        for (int i = 0; i < this.lists.size(); i++) {
+            this.dlm.addElement(this.lists.get(i).get("name"));
+        }
     }
 }
