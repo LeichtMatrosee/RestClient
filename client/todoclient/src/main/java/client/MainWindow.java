@@ -68,7 +68,19 @@ public class MainWindow extends TodoFrame {
             this.deleteLists();
         } else if (e.getSource() == this.testApi) {
             this.checkApi();
+        } else if (e.getSource() == this.editList) {
+            this.editLists();
         }
+    }
+
+    private void editLists() {
+        int index = this.entries.getSelectedIndex();
+        String name, guid;
+
+        name = this.lists.get(index).get("name");
+        guid = this.lists.get(index).get("id");
+
+        ListWindow lw = new ListWindow(name, guid);
     }
 
     private void checkApi() {
