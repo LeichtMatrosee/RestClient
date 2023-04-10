@@ -144,6 +144,38 @@
                 "PLCH": [],
                 "body": []
             }
+        },
+        {
+            "name": "updateList",
+            "endpoint": "/todo-list/PLCH_ID",
+            "method": "POST",
+            "contentType": "application/json",
+            "params": {
+                "url": [],
+                "PLCH": [
+                    {
+                        "plch": "PLCH_ID",
+                        "attr": "listId"
+                    }
+                ],
+                "body": []
+            }
+        },
+        {
+            "name": "getCertainList",
+            "endpoint": "/todo-list/PLCH_ID",
+            "method": "GET",
+            "contentType": "application/json",
+            "params": {
+                "url": [],
+                "PLCH": [
+                    {
+                        "plch": "PLCH_ID",
+                        "attr": "listId"
+                    }
+                ],
+                "body": []
+            }
         }
         
     ]

@@ -80,7 +80,7 @@ public class MainWindow extends TodoFrame {
         name = this.lists.get(index).get("name");
         guid = this.lists.get(index).get("id");
 
-        ListWindow lw = new ListWindow(name, guid);
+        ListWindow lw = new ListWindow(this.frame, name, guid, this.rc);
     }
 
     private void checkApi() {

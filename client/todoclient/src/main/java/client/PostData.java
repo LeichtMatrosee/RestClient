@@ -1,6 +1,7 @@
 package client;
 
 import java.security.InvalidParameterException;
+import java.util.HashMap;
 
 public class PostData {
     private String type = "";
@@ -58,6 +59,20 @@ public class PostData {
         this.name = name;
         this.description = "";
         this.listId = "";
+    }
+
+    public PostData(HashMap<String,String> map) {
+        if (!map.get("type").equals("list") && !map.get("type").equals("entry")) {
+            throw new InvalidParameterException("Type must either be list or entry, was " + map.get("type") + " instead.");
+        } else {
+            this.type = map.get("type");
+        }
+
+        if (map.get("name") != null) this.name = map.get("name");
+        if (map.get("description") != null) this.description = map.get("description");
+        if (map.get("listId") != null) this.listId = map.get("listId");
+        if (map.get("entryId") != null) this.entryId = map.get("entryId");
+        if (map.get("id") != null) this.id = map.get("id");
     }
 
     public PostData(String listId, String entryId, String name, String description, String type) throws InvalidParameterException {

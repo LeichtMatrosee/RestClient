@@ -200,6 +200,44 @@ public class RestCommunicator {
         return data;
     }
 
+    public ResponseData updateList(PostData p) throws IOException, URISyntaxException, InterruptedException, JSONException {
+        if (p.getListId().equals("")) throw new IOException("Must give list id!");
+        // Build the httprequest
+        HttpRequest postRequest = this.buildHttpRequest(p, "updateList");
+
+        // Build the client for posting
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        // Post the http request
+        HttpResponse<String> response = httpClient.send(postRequest, BodyHandlers.ofString());
+        
+        // Deserialize the json string to an object
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String,Object> map = mapper.readValue(response.body(), Map.class);
+
+        ResponseData data = new ResponseData(map);
+        return data;
+    }
+
+    public ResponseData getCertainList(PostData p) throws IOException, URISyntaxException, InterruptedException, JSONException {
+        if (p.getListId().equals("")) throw new IOException("Must give list id!");
+        // Build the httprequest
+        HttpRequest postRequest = this.buildHttpRequest(p, "getCertainList");
+
+        // Build the client for posting
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        // Post the http request
+        HttpResponse<String> response = httpClient.send(postRequest, BodyHandlers.ofString());
+        
+        // Deserialize the json string to an object
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String,Object> map = mapper.readValue(response.body(), Map.class);
+
+        ResponseData data = new ResponseData(map);
+        return data;
+    }
+
     /**
      * 
      * 
