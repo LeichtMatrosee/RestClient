@@ -12,55 +12,6 @@ public class PostData {
     private boolean successful = false;
     private String entryId = "";
 
-    /**
-     * @constructor
-     * @brief
-     * 
-     * @param type
-     * @param name
-     * @param description
-     * @param listId
-     * @throws InvalidParameterException
-     */
-    public PostData(String type, String name, String description, String listId) throws InvalidParameterException {
-        if (type != "list" && type != "entry") {
-            throw new InvalidParameterException("Type must either be list or entry, was " + type + " instead.");
-        }
-        this.type = type;
-        this.name = name;
-        this.description = description;
-
-        if (listId == "" && type == "entry") {
-            throw new InvalidParameterException("ListId cannot be empty when pushing new entries for a list.");
-        }
-        this.listId = listId;
-    }
-
-    // TODO this constructor is basically only useful for lists, change error handling
-    /**
-     * @constructor
-     * 
-     * @param {String} type
-     * @param {String} name
-     */
-    public PostData(String type, String name, String description) throws InvalidParameterException {
-        if (type != "list" && type != "entry") {
-            throw new InvalidParameterException("Type must either be list or entry, was " + type + " instead.");
-        }
-        this.type = type;
-        this.name = name;
-
-        this.description = description;
-        this.listId = "";
-    }
-
-    public PostData(String type, String name) {
-        this.type = type;
-        this.name = name;
-        this.description = "";
-        this.listId = "";
-    }
-
     public PostData(HashMap<String,String> map) {
         if (!map.get("type").equals("list") && !map.get("type").equals("entry")) {
             throw new InvalidParameterException("Type must either be list or entry, was " + map.get("type") + " instead.");

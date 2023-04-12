@@ -145,18 +145,17 @@
         },
         {
             "name": "getCertainList",
-            "endpoint": "/todo-list/PLCH_ID",
+            "endpoint": "/search",
             "method": "GET",
             "contentType": "application/json",
             "params": {
-                "url": [],
-                "PLCH": [
-                    {
-                        "plch": "PLCH_ID",
-                        "attr": "listId"
-                    }
+                "url": [
+                    "listId"
                 ],
-                "body": []
+                "PLCH": [
+                ],
+                "body": [
+                ]
             }
         },
         {

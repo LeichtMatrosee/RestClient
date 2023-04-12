@@ -132,10 +132,9 @@ public class MainWindow extends TodoFrame {
     }
 
     private void addLists() {
-        AddWindow add = new AddWindow(this.frame, "Neue Liste", "", "");
+        AddWindow add = new AddWindow(this.frame, "Neue Liste", "", "", false);
 
         String name = add.getName();
-        String description = add.getDescription();
 
         ResponseData rd;
         if (!name.equals("")) {

@@ -26,6 +26,7 @@ public class ListWindow extends JDialog implements ActionListener {
 
     // GUI Stuff
     protected JPanel topPanel;
+    protected JLabel infoLabel;
     
     protected JPanel listInfos;
     protected JTextField nameLabel;
@@ -48,8 +49,10 @@ public class ListWindow extends JDialog implements ActionListener {
     private String listGuid;
     private String listName;
     private String listDesc;
+    private String info = "";
 
     private ArrayList<HashMap<String,String>> entries;
+
 
 
 
@@ -114,8 +117,10 @@ public class ListWindow extends JDialog implements ActionListener {
 
 
         // Top Panel Config
+        this.infoLabel = new JLabel();
         this.topPanel = new JPanel();
-        this.topPanel.setLayout(new GridLayout(2,1,10,10));
+        this.topPanel.setLayout(new GridLayout(3,1,10,10));
+        this.topPanel.add(this.infoLabel);
         this.topPanel.add(this.listInfos);
         this.topPanel.add(this.buttonPanel);
 
@@ -192,6 +197,15 @@ public class ListWindow extends JDialog implements ActionListener {
         }
     }
 
+    private void updateInfoMessage(String msg) {
+        this.info = msg;
+        this.updateInfoMessage();
+    }
+
+    private void updateInfoMessage() {
+        this.infoLabel.setText(this.info);
+    }
+
     private void nameUpdated() {
         String oldName = this.listName;
         String newName = this.nameLabel.getText();
@@ -209,11 +223,13 @@ public class ListWindow extends JDialog implements ActionListener {
         } catch (Exception e) {
             this.nameLabel.setText(oldName);
             this.descriptionPane.setText(oldDesc);
+            this.updateInfoMessage("Updating list infos failed with a " + e.getClass().getName() + ", msg: " + e.getMessage());
             return;
         } 
 
         this.listName = newName;
         this.listDesc = newDesc;
+        this.updateInfoMessage("Listeninformationen aktualisiert");
     }
 
     private void loadEntries() {
@@ -226,10 +242,12 @@ public class ListWindow extends JDialog implements ActionListener {
             // rd = this.rc.getEntriesFromList(new PostData(map), "getEntries");
             rd = this.rc.sendHttpRequest(new PostData(map), "getEntries");
         } catch (Exception e) {
+            this.updateInfoMessage("Loading entries failed with a " + e.getClass().getName() + ", msg: " + e.getMessage());
             return;
         }
 
         for (int i = 0; i < rd.getEntries().length; i++) {
+            this.entries.clear();
             HashMap<String, String> newEntry = new HashMap<String, String>();
             newEntry.put("id", rd.getEntries()[i].getId());
             newEntry.put("name", rd.getEntries()[i].getName());
@@ -239,6 +257,7 @@ public class ListWindow extends JDialog implements ActionListener {
         }
 
         this.updateDlm();
+        this.updateInfoMessage("Einträge geladen");
     }
 
     private void editCurrentEntry() {
@@ -249,7 +268,7 @@ public class ListWindow extends JDialog implements ActionListener {
         String name = this.entries.get(index).get("name");
         String desc = this.entries.get(index).get("description");
         
-        AddWindow add = new AddWindow((JFrame) super.getParent(), "Eintrag bearbeiten", name, desc);
+        AddWindow add = new AddWindow((JFrame) super.getParent(), "Eintrag bearbeiten", name, desc, true);
 
         String newName = add.getName();
         String newDesc = add.getDescription();
@@ -263,6 +282,7 @@ public class ListWindow extends JDialog implements ActionListener {
             // this.rc.updateEntry(new PostData(newEntry));
             this.rc.sendHttpRequest(new PostData(newEntry), "updateEntry");
         } catch (Exception e) {
+            this.updateInfoMessage("Editing entry failed with a " + e.getClass().getName() + ", msg: " + e.getMessage());
             return;
         }
 
@@ -270,6 +290,7 @@ public class ListWindow extends JDialog implements ActionListener {
         this.entries.get(index).put("name", newName);
         this.entries.get(index).put("description", newDesc);
         this.updateDlm();
+        this.updateInfoMessage("Eintrag bearbeitet");
     }
 
     private void deleteCurrentEntry() {
@@ -285,15 +306,17 @@ public class ListWindow extends JDialog implements ActionListener {
             // this.rc.deleteEntry(new PostData(newEntry));
             this.rc.sendHttpRequest(new PostData(newEntry), "deleteEntry");
         } catch (Exception e) {
+            this.updateInfoMessage("Deleting entry failed with a " + e.getClass().getName() + ", msg: " + e.getMessage());
             return;
         }
 
         this.entryList.remove(index);
         this.updateDlm();
+        this.updateInfoMessage("Eintrag gelöscht");
     }
 
     private void addNewEntry() {
-        AddWindow add = new AddWindow((JFrame) super.getParent(), "Neuer Eintrag", "", "");
+        AddWindow add = new AddWindow((JFrame) super.getParent(), "Neuer Eintrag", "", "", true);
 
         String name = add.getName();
         String description = add.getDescription();
@@ -310,6 +333,7 @@ public class ListWindow extends JDialog implements ActionListener {
                 // rd = this.rc.addEntryToList(new PostData(map));
                 rd = this.rc.sendHttpRequest(new PostData(map), "addEntry");
             } catch (Exception e) {
+                this.updateInfoMessage("Adding entry failed with a " + e.getClass().getName() + ", msg: " + e.getMessage());
                 return;
             }
         } else {
@@ -323,6 +347,7 @@ public class ListWindow extends JDialog implements ActionListener {
         this.entries.add(newEntry);
 
         this.updateDlm();
+        this.updateInfoMessage("Eintrag hinzugefügt");
     }
 
     private void updateDlm() {

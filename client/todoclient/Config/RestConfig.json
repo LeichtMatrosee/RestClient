@@ -17,7 +17,7 @@
         },
         {
             "name": "getEntries",
-            "endpoint": "/todo-list/PLCH_ID/entries",
+            "endpoint": "/todo-list/PLCH_ID",
             "method": "GET",
             "contentType": "application/json",
             "params": {
@@ -49,105 +49,7 @@
         },
         {
             "name": "addEntry",
-            "endpoint": "/entry",
-            "method": "POST",
-            "contentType": "application/json",
-            "params": {
-                "url": [],
-                "PLCH": [],
-                "body": [
-                    "name",
-                    "listId",
-                    "description"
-                ]
-            }
-        },
-        {
-            "name": "updateEntry",
-            "endpoint": "/entry/PLCH_LIST_ID/PLCH_ENTRY_ID",
-            "method": "POST",
-            "contentType": "application/json",
-            "params": {
-                "url": [],
-                "PLCH": [
-                    {
-                        "plch": "PLCH_LIST_ID",
-                        "attr": "listId"
-                    },
-                    {
-                        "plch": "PLCH_ENTRY_ID",
-                        "attr": "entryId"
-                    }
-                ],
-                "body": [
-                    "name",
-                    "listId",
-                    "description"
-                ]
-            }
-        },
-        {
-            "name": "deleteEntry",
-            "endpoint": "/entry/PLCH_LIST_ID/PLCH_ENTRY_ID",
-            "method": "DELETE",
-            "contentType": "application/json",
-            "params": {
-                "url": [],
-                "PLCH": [
-                    {
-                        "plch": "PLCH_LIST_ID",
-                        "attr": "listId"
-                    },
-                    {
-                        "plch": "PLCH_ENTRY_ID",
-                        "attr": "entryId"
-                    }
-                ],
-                "body": []
-            }
-        },
-        {
-            "name": "addList",
-            "endpoint": "/todo-list",
-            "method": "PUT",
-            "contentType": "application/json",
-            "params": {
-                "url": [],
-                "PLCH": [],
-                "body": [
-                    "name",
-                    "description"
-                ]
-            }
-        },
-        {
-            "name": "addList",
-            "endpoint": "/todo-list",
-            "method": "PUT",
-            "contentType": "application/json",
-            "params": {
-                "url": [],
-                "PLCH": [],
-                "body": [
-                    "name",
-                    "description"
-                ]
-            }
-        },
-        {
-            "name": "getAllLists",
-            "endpoint": "/todo-list?all=true",
-            "method": "GET",
-            "contentType": "application/json",
-            "params": {
-                "url": [],
-                "PLCH": [],
-                "body": []
-            }
-        },
-        {
-            "name": "updateList",
-            "endpoint": "/todo-list/PLCH_ID",
+            "endpoint": "/todo-list/PLCH_ID/entry",
             "method": "POST",
             "contentType": "application/json",
             "params": {
@@ -161,6 +63,83 @@
                 "body": [
                     "name",
                     "description"
+                ]
+            }
+        },
+        {
+            "name": "updateEntry",
+            "endpoint": "/entry/PLCH_ENTRY_ID",
+            "method": "PATCH",
+            "contentType": "application/json",
+            "params": {
+                "url": [],
+                "PLCH": [
+                    {
+                        "plch": "PLCH_ENTRY_ID",
+                        "attr": "entryId"
+                    }
+                ],
+                "body": [
+                    "name",
+                    "description"
+                ]
+            }
+        },
+        {
+            "name": "deleteEntry",
+            "endpoint": "/entry/PLCH_ENTRY_ID",
+            "method": "DELETE",
+            "contentType": "application/json",
+            "params": {
+                "url": [],
+                "PLCH": [
+                    {
+                        "plch": "PLCH_ENTRY_ID",
+                        "attr": "entryId"
+                    }
+                ],
+                "body": []
+            }
+        },
+        {
+            "name": "addList",
+            "endpoint": "/todo-list",
+            "method": "POST",
+            "contentType": "application/json",
+            "params": {
+                "url": [],
+                "PLCH": [],
+                "body": [
+                    "name"
+                ]
+            }
+        },
+        {
+            "name": "getAllLists",
+            "endpoint": "/todo-list",
+            "method": "GET",
+            "contentType": "application/json",
+            "params": {
+                "url": [],
+                "PLCH": [],
+                "body": []
+            }
+        },
+        {
+            "name": "updateList",
+            "endpoint": "/todo-list/PLCH_ID",
+            "method": "PATCH",
+            "contentType": "application/json",
+            "params": {
+                "url": [],
+                "PLCH": [
+                    {
+                        "plch": "PLCH_ID",
+                        "attr": "listId"
+                    }
+                ],
+                "body": [
+                    "name"
                 ]
             }
         },
