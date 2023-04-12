@@ -35,7 +35,7 @@ public class AddWindow extends JDialog implements ActionListener {
     private boolean saved = false;
     private boolean supposedToBeClosed = false;
 
-    public AddWindow(JFrame parent, String title) {
+    public AddWindow(JFrame parent, String title, String name, String desc) {
         super(parent, true);
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -60,8 +60,8 @@ public class AddWindow extends JDialog implements ActionListener {
 
         this.editPanel = new JPanel(new GridLayout(2, 2, 20, 20));
         
-        this.nameField = new JTextField("Namen eintragen");
-        this.descriptionField = new JTextArea("Beschreibung eintragen");
+        this.nameField = new JTextField(name.equals("") ? "Namen eintragen": name);
+        this.descriptionField = new JTextArea(desc.equals("") ? "Beschreibung eintragen" : desc);
 
         this.name = new JLabel("Name");
         this.editPanel.add(this.name);

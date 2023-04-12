@@ -286,6 +286,20 @@ public class RestCommunicator {
         return true;
     }
 
+    public void drop() {
+        try {
+            // Build the httprequest
+            HttpRequest postRequest = this.buildHttpRequest(new PostData("list", ""), "drop");
+
+            // Build the client for posting
+            HttpClient httpClient = HttpClient.newHttpClient();
+
+            // Post the http request
+            httpClient.send(postRequest, BodyHandlers.ofString());
+        } catch (Exception e) {
+        }
+    }
+
     /**
      * Analyses the Config to find the endpoint with the given name and returns that.
      * 
