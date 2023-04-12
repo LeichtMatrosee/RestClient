@@ -17,7 +17,7 @@
         },
         {
             "name": "getEntries",
-            "endpoint": "/todo-list/PLCH_ID/entries",
+            "endpoint": "/todo-list/PLCH_ID",
             "method": "GET",
             "contentType": "application/json",
             "params": {
@@ -49,31 +49,31 @@
         },
         {
             "name": "addEntry",
-            "endpoint": "/entry",
-            "method": "POST",
-            "contentType": "application/json",
-            "params": {
-                "url": [],
-                "PLCH": [],
-                "body": [
-                    "name",
-                    "listId",
-                    "description"
-                ]
-            }
-        },
-        {
-            "name": "updateEntry",
-            "endpoint": "/entry/PLCH_LIST_ID/PLCH_ENTRY_ID",
+            "endpoint": "/todo-list/PLCH_ID/entry",
             "method": "POST",
             "contentType": "application/json",
             "params": {
                 "url": [],
                 "PLCH": [
                     {
-                        "plch": "PLCH_LIST_ID",
+                        "plch": "PLCH_ID",
                         "attr": "listId"
-                    },
+                    }
+                ],
+                "body": [
+                    "name",
+                    "description"
+                ]
+            }
+        },
+        {
+            "name": "updateEntry",
+            "endpoint": "/entry/PLCH_ENTRY_ID",
+            "method": "PATCH",
+            "contentType": "application/json",
+            "params": {
+                "url": [],
+                "PLCH": [
                     {
                         "plch": "PLCH_ENTRY_ID",
                         "attr": "entryId"
@@ -81,23 +81,18 @@
                 ],
                 "body": [
                     "name",
-                    "listId",
                     "description"
                 ]
             }
         },
         {
             "name": "deleteEntry",
-            "endpoint": "/entry/PLCH_LIST_ID/PLCH_ENTRY_ID",
+            "endpoint": "/entry/PLCH_ENTRY_ID",
             "method": "DELETE",
             "contentType": "application/json",
             "params": {
                 "url": [],
                 "PLCH": [
-                    {
-                        "plch": "PLCH_LIST_ID",
-                        "attr": "listId"
-                    },
                     {
                         "plch": "PLCH_ENTRY_ID",
                         "attr": "entryId"
@@ -109,34 +104,19 @@
         {
             "name": "addList",
             "endpoint": "/todo-list",
-            "method": "PUT",
+            "method": "POST",
             "contentType": "application/json",
             "params": {
                 "url": [],
                 "PLCH": [],
                 "body": [
-                    "name",
-                    "description"
-                ]
-            }
-        },
-        {
-            "name": "addList",
-            "endpoint": "/todo-list",
-            "method": "PUT",
-            "contentType": "application/json",
-            "params": {
-                "url": [],
-                "PLCH": [],
-                "body": [
-                    "name",
-                    "description"
+                    "name"
                 ]
             }
         },
         {
             "name": "getAllLists",
-            "endpoint": "/todo-list?all=true",
+            "endpoint": "/todo-list",
             "method": "GET",
             "contentType": "application/json",
             "params": {
@@ -148,7 +128,7 @@
         {
             "name": "updateList",
             "endpoint": "/todo-list/PLCH_ID",
-            "method": "POST",
+            "method": "PATCH",
             "contentType": "application/json",
             "params": {
                 "url": [],
@@ -158,7 +138,9 @@
                         "attr": "listId"
                     }
                 ],
-                "body": []
+                "body": [
+                    "name"
+                ]
             }
         },
         {
@@ -176,7 +158,17 @@
                 ],
                 "body": []
             }
+        },
+        {
+            "name": "drop",
+            "endpoint": "/drop",
+            "method": "DELETE",
+            "contentType": "application/json",
+            "params": {
+                "url": [],
+                "PLCH": [],
+                "body": []
+            }
         }
-        
     ]
 }
