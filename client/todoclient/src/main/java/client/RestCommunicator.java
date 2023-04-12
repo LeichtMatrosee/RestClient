@@ -248,7 +248,6 @@ public class RestCommunicator {
      * @throws JSONException
      */
     public ResponseData getAllLists() throws IOException, URISyntaxException, InterruptedException, JSONException {
-
         // Build the httprequest
         HttpRequest postRequest = this.buildHttpRequest(new PostData("list", ""), "getAllLists");
 
@@ -298,6 +297,24 @@ public class RestCommunicator {
             httpClient.send(postRequest, BodyHandlers.ofString());
         } catch (Exception e) {
         }
+    }
+
+    public ResponseData sendHttpRequest(PostData p, String endpointName) throws IOException, URISyntaxException, InterruptedException, JSONException {
+        // Build the httprequest
+        HttpRequest postRequest = this.buildHttpRequest(p, endpointName);
+
+        // Build the client for posting
+        HttpClient httpClient = HttpClient.newHttpClient();
+
+        // Post the http request
+        HttpResponse<String> response = httpClient.send(postRequest, BodyHandlers.ofString());
+        
+        // Deserialize the json string to an object
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String,Object> map = mapper.readValue(response.body(), Map.class);
+
+        ResponseData data = new ResponseData(map);
+        return data;
     }
 
     /**
@@ -458,14 +475,13 @@ public class RestCommunicator {
 
         // Build the httprequest
         Builder requestBuilder = HttpRequest.newBuilder()
-            .uri(new URI(url))
-            .header("Content-Type", endPoint.get("contentType").toString());
+            .uri(new URI(url)).header("Content-Type", endPoint.get("contentType").toString());
 
         // Set method on request
         switch (endPoint.get("method").toString()) {
             case "GET": requestBuilder = requestBuilder.GET(); break;
             case "POST": requestBuilder = requestBuilder.POST(HttpRequest.BodyPublishers.ofString(this.bodyBuilder(p, "list", endPoint).toString())); break;
-            case "PUT": requestBuilder = requestBuilder.PUT(HttpRequest.BodyPublishers.ofString(this.bodyBuilder(p, "list", endPoint).toString())); break;
+            case "PATCH": requestBuilder = requestBuilder.method("PATCH", HttpRequest.BodyPublishers.ofString(this.bodyBuilder(p, "list", endPoint).toString())); break;
             case "DELETE": requestBuilder = requestBuilder.DELETE(); break;
             default: throw new IOException("No method found!");
         }

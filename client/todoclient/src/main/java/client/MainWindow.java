@@ -104,7 +104,10 @@ public class MainWindow extends TodoFrame {
         this.dlm.removeAllElements();
 
         try {
-            rd = super.rc.getAllLists();
+            HashMap<String, String> dummy = new HashMap<String, String>();
+            dummy.put("type", "list");
+            // rd = super.rc.getAllLists();
+            rd = super.rc.sendHttpRequest(new PostData(dummy), "getAllLists");
         } catch (Exception e) {
             if (e.getMessage() != "" && e.getMessage() != null) {
                 this.updateErrorInfo(e.getMessage());
@@ -137,7 +140,11 @@ public class MainWindow extends TodoFrame {
         ResponseData rd;
         if (!name.equals("")) {
             try {
-                rd = super.rc.addNewList(new PostData("list", name, description));
+                HashMap<String, String> newList = new HashMap<String, String>();
+                newList.put("type", "list");
+                newList.put("name", name);
+                // rd = super.rc.addNewList(new PostData(newList));
+                rd = super.rc.sendHttpRequest(new PostData(newList), "addList");
             } catch (Exception e) {
                 if (!e.getMessage().equals("") || e.getMessage() != null) {
                     this.updateErrorInfo(e.getMessage());
@@ -165,7 +172,38 @@ public class MainWindow extends TodoFrame {
 
         String idToDelete = this.lists.get(index).get("id");
         try {
-            super.rc.deleteList(new PostData("list", "", "", idToDelete));
+            // super.rc.deleteList(new PostData("list", "", "", idToDelete));
+            HashMap<String, String> listToDelete = new HashMap<String, String>();
+            listToDelete.put("type", "list");
+            listToDelete.put("listId", idToDelete);
+            listToDelete.put("id", idToDelete);
+            super.rc.sendHttpRequest(new PostData(listToDelete), "deleteList");
+        } catch (Exception e) {
+            if (!e.getMessage().equals("") || e.getMessage() != null) {
+                this.updateErrorInfo(e.getMessage());
+            }
+            return;
+        }
+
+        try {
+            HashMap<String, String> entryGetter = new HashMap<String, String>();
+            entryGetter.put("type", "entry");
+            entryGetter.put("listId", idToDelete);
+            ResponseData rd = this.rc.sendHttpRequest(new PostData(entryGetter), "getEntries");
+            // ResponseData rd = this.rc.getEntriesFromList(new PostData(entryGetter));
+
+            int deleted = 0;
+            for (int i = 0; i < rd.getEntries().length; i++) {
+                HashMap<String, String> entryToDelete = new HashMap<String, String>();
+                entryToDelete.put("type", "entry");
+                entryToDelete.put("listId", idToDelete);
+                entryToDelete.put("entryId", rd.getEntries()[i].getId());
+                rd = super.rc.sendHttpRequest(new PostData(entryToDelete), "deleteEntry");
+
+                deleted += rd.getDeleted();
+            }
+
+            System.out.println("Deleted: " + deleted);
         } catch (Exception e) {
             if (!e.getMessage().equals("") || e.getMessage() != null) {
                 this.updateErrorInfo(e.getMessage());

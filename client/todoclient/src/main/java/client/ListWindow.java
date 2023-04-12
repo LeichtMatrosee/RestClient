@@ -125,7 +125,8 @@ public class ListWindow extends JDialog implements ActionListener {
             HashMap<String, String> map = new HashMap<String,String>();
             map.put("type", "entry");
             map.put("listId", listGuid);
-            rd = this.rc.getEntriesFromList(new PostData(map));
+            // rd = this.rc.getEntriesFromList(new PostData(map));
+            rd = this.rc.sendHttpRequest(new PostData(map), "getEntries");
         } catch (Exception e) {
             return;
         }
@@ -159,7 +160,8 @@ public class ListWindow extends JDialog implements ActionListener {
             HashMap<String, String> map = new HashMap<String,String>();
             map.put("type", "list");
             map.put("listId", listGuid);
-            rd = this.rc.getCertainList(new PostData(map));
+            // rd = this.rc.getCertainList(new PostData(map));
+            rd = this.rc.sendHttpRequest(new PostData(map), "getCertainList");
         } catch (Exception e) {
             return;
         }
@@ -202,7 +204,8 @@ public class ListWindow extends JDialog implements ActionListener {
             newValues.put("listId", this.listGuid);
             newValues.put("name", newName);
             newValues.put("description", newDesc);
-            this.rc.updateList(new PostData(newValues));
+            // this.rc.updateList(new PostData(newValues));
+            this.rc.sendHttpRequest(new PostData(newValues), "updateList");
         } catch (Exception e) {
             this.nameLabel.setText(oldName);
             this.descriptionPane.setText(oldDesc);
@@ -220,7 +223,8 @@ public class ListWindow extends JDialog implements ActionListener {
             HashMap<String, String> map = new HashMap<String,String>();
             map.put("listId", this.listGuid);
             map.put("type", "entry");
-            rd = this.rc.getEntriesFromList(new PostData(map));
+            // rd = this.rc.getEntriesFromList(new PostData(map), "getEntries");
+            rd = this.rc.sendHttpRequest(new PostData(map), "getEntries");
         } catch (Exception e) {
             return;
         }
@@ -256,7 +260,8 @@ public class ListWindow extends JDialog implements ActionListener {
             newEntry.put("entryId", idToDelete);
             newEntry.put("name", newName);
             newEntry.put("description", newDesc);
-            this.rc.updateEntry(new PostData(newEntry));
+            // this.rc.updateEntry(new PostData(newEntry));
+            this.rc.sendHttpRequest(new PostData(newEntry), "updateEntry");
         } catch (Exception e) {
             return;
         }
@@ -274,9 +279,11 @@ public class ListWindow extends JDialog implements ActionListener {
         String idToDelete = this.entries.get(index).get("id");
         try {
             HashMap<String, String> newEntry = new HashMap<String, String>();
+            newEntry.put("type", "entry");
             newEntry.put("listId", this.listGuid);
             newEntry.put("entryId", idToDelete);
-            this.rc.deleteEntry(new PostData(newEntry));
+            // this.rc.deleteEntry(new PostData(newEntry));
+            this.rc.sendHttpRequest(new PostData(newEntry), "deleteEntry");
         } catch (Exception e) {
             return;
         }
@@ -300,7 +307,8 @@ public class ListWindow extends JDialog implements ActionListener {
                 map.put("name", name);
                 if (!description.equals("") && description != null) map.put("description", description);
                 
-                rd = this.rc.addEntryToList(new PostData(map));
+                // rd = this.rc.addEntryToList(new PostData(map));
+                rd = this.rc.sendHttpRequest(new PostData(map), "addEntry");
             } catch (Exception e) {
                 return;
             }
