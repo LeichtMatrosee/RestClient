@@ -40,7 +40,7 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
     protected JLabel errorInfo;
  
     // Config
-    protected ArrayList<HashMap<String, String>> lists;
+    protected ArrayList<HashMap<String, String>> todoLists;
 
     // Configuration
     private String bgColor = "green";
@@ -62,16 +62,11 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
             e.printStackTrace();
         }
 
-
         this.setTitle(title);
         this.setSize(600, 600);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(true);
         this.setLayout(new BorderLayout());
-
-        // Configure Panel for Buttons
-        this.buttonPanel = new JPanel();
-        this.buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
 
         // Configure Panel for lists
         this.listPanel = new JPanel();
@@ -85,9 +80,9 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
         this.dlm = new DefaultListModel<String>();
         this.entries = new JList<String>();
         this.entries.setModel(dlm);
-        this.list.add(this.entries);
         this.entries.setLayoutOrientation(JList.VERTICAL);
-
+        this.list.add(this.entries);
+        
         // Configure Scrollbar
         this.listScroller = new JScrollPane();
         this.listScroller.setViewportView(entries);
@@ -96,44 +91,59 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
         // Add entries to listPanel
         this.listPanel.add(this.list);
 
+        // Panel with general infos
         this.infoPanel = new JPanel();
         this.infoPanel.setLayout(new FlowLayout());
 
+        // Panel at the top of frame
         this.topPanel = new JPanel();
         this.topPanel.setLayout(new BorderLayout());
 
-        this.topPanel.add(this.infoPanel, BorderLayout.NORTH);
-        this.topPanel.add(this.buttonPanel, BorderLayout.SOUTH);
-    
-        this.add(this.topPanel, BorderLayout.NORTH);
-        this.add(this.listPanel);
+        this.todoLists = new ArrayList<HashMap<String,String>>();
 
-        this.lists = new ArrayList<HashMap<String,String>>();
+        // Configure Panel for Buttons
+        this.buttonPanel = new JPanel();
+        this.buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        
+        // Button to load all lists
         this.loadAllLists = new JButton("Alle listen laden");
         this.loadAllLists.addActionListener(this);
         
+        // Button to edit lists
         this.editList = new JButton("Liste bearbeiten");
         this.editList.addActionListener(this);
 
+        // Button to delete lists
         this.deleteList = new JButton("Liste löschen");
         this.deleteList.addActionListener(this);
 
+        // Button to test, whether the API is reachable
         this.testApi = new JButton("Teste API Verbindung");
         this.testApi.addActionListener(this);
 
+        // Button to add a new list
         this.addList = new JButton("Liste hinzufügen");
         this.addList.addActionListener(this);
 
-        this.apiInfo = new JLabel();
-        this.errorInfo = new JLabel();
-        this.infoPanel.add(this.apiInfo);
-        this.infoPanel.add(this.errorInfo);
-
+        // Add all buttons to buttonpanel
         this.buttonPanel.add(this.loadAllLists);
         this.buttonPanel.add(this.addList);
         this.buttonPanel.add(this.editList);
         this.buttonPanel.add(this.deleteList);
         this.buttonPanel.add(this.testApi);
+
+        // Labels for general information
+        this.apiInfo = new JLabel();
+        this.errorInfo = new JLabel();
+        this.infoPanel.add(this.apiInfo);
+        this.infoPanel.add(this.errorInfo);
+
+        // Add both button 
+        this.topPanel.add(this.infoPanel, BorderLayout.NORTH);
+        this.topPanel.add(this.buttonPanel, BorderLayout.SOUTH);
+    
+        this.add(this.topPanel, BorderLayout.NORTH);
+        this.add(this.listPanel);
 
         this.setVisible(true);
     }
@@ -170,8 +180,8 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
         int index = this.entries.getSelectedIndex();
         String name, guid;
 
-        name = this.lists.get(index).get("name");
-        guid = this.lists.get(index).get("id");
+        name = this.todoLists.get(index).get("name");
+        guid = this.todoLists.get(index).get("id");
 
         new ListWindow(this, name, guid, this.rc);
     }
@@ -211,14 +221,14 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
         this.updateErrorInfo("");
 
         for (int i = 0; i < rd.getEntries().length; i++) {
-            this.lists.add(new HashMap<String,String>());
-            this.lists.get(i).put("name", rd.getEntries()[i].getName());
-            this.lists.get(i).put("id", rd.getEntries()[i].getId());
-            this.lists.get(i).put("description", rd.getEntries()[i].getDescription());
+            this.todoLists.add(new HashMap<String,String>());
+            this.todoLists.get(i).put("name", rd.getEntries()[i].getName());
+            this.todoLists.get(i).put("id", rd.getEntries()[i].getId());
+            this.todoLists.get(i).put("description", rd.getEntries()[i].getDescription());
         }
 
-        for (int i = 0; i < this.lists.size(); i++) {
-            this.dlm.addElement(this.lists.get(i).get("name"));
+        for (int i = 0; i < this.todoLists.size(); i++) {
+            this.dlm.addElement(this.todoLists.get(i).get("name"));
         }
         
         this.entries.setModel(this.dlm);
@@ -253,7 +263,7 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
         newEntry.put("name", rd.getEntries()[0].getName());
         newEntry.put("id", rd.getEntries()[0].getId());
         newEntry.put("description", rd.getEntries()[0].getDescription());
-        this.lists.add(newEntry);
+        this.todoLists.add(newEntry);
 
         this.updateDlm();
     }
@@ -262,7 +272,7 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
         int index = this.entries.getSelectedIndex();
         if (index == -1) return;
 
-        String idToDelete = this.lists.get(index).get("id");
+        String idToDelete = this.todoLists.get(index).get("id");
         try {
             // this.rc.deleteList(new PostData("list", "", "", idToDelete));
             HashMap<String, String> listToDelete = new HashMap<String, String>();
@@ -303,7 +313,7 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
             return;
         }
 
-        this.lists.remove(index);
+        this.todoLists.remove(index);
         this.updateErrorInfo("");
         this.updateDlm();
     }
@@ -311,8 +321,8 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
     private void updateDlm() {
         this.dlm.removeAllElements();
 
-        for (int i = 0; i < this.lists.size(); i++) {
-            this.dlm.addElement(this.lists.get(i).get("name"));
+        for (int i = 0; i < this.todoLists.size(); i++) {
+            this.dlm.addElement(this.todoLists.get(i).get("name"));
         }
     }
 
