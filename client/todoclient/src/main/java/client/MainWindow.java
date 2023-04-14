@@ -51,7 +51,7 @@ public class MainWindow extends TodoFrame {
         this.buttonPanel.add(this.deleteList);
         this.buttonPanel.add(this.testApi);
 
-        this.frame.setVisible(true);
+        this.setVisible(true);
     }
 
     public MainWindow() {
@@ -80,7 +80,7 @@ public class MainWindow extends TodoFrame {
         name = this.lists.get(index).get("name");
         guid = this.lists.get(index).get("id");
 
-        new ListWindow(this.frame, name, guid, this.rc);
+        new ListWindow(this, name, guid, this.rc);
     }
 
     private void checkApi() {
@@ -132,7 +132,7 @@ public class MainWindow extends TodoFrame {
     }
 
     private void addLists() {
-        AddWindow add = new AddWindow(this.frame, "Neue Liste", "", "", false);
+        AddWindow add = new AddWindow(this, "Neue Liste", "", "", false);
 
         String name = add.getName();
 

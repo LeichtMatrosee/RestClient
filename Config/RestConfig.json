@@ -1,6 +1,6 @@
 {
     "host": "localhost",
-    "port": "6000",
+    "port": "13376",
     "endpoints": [
         {
             "name": "search",

@@ -102,7 +102,7 @@ public class RestCommunicator {
         ObjectMapper mapper = new ObjectMapper();
         Map<String,Object> map = mapper.readValue(response.body(), Map.class);
 
-        ResponseData data = new ResponseData(map);
+        ResponseData data = new ResponseData(map, response.statusCode());
         return data;
     }
 

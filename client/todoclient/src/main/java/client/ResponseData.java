@@ -40,8 +40,10 @@ public class ResponseData {
 
     private boolean success;
     private String message;
+
+    private int statusCode;
     
-    public ResponseData (Map<String,Object> map) {
+    public ResponseData (Map<String,Object> map, int statusCode) {
         if (map.get("entries") != null) {
             ArrayList<LinkedHashMap<String,String>> rEntries = (ArrayList<LinkedHashMap<String,String>>) map.get("entries");
             this.entries = new EntryData[rEntries.size()];
@@ -55,6 +57,8 @@ public class ResponseData {
                 if (rEntries.get(i).get("list_id") != null)     this.entries[i].setListId(rEntries.get(i).get("list_id"));
             }
         }
+
+        this.statusCode = statusCode;
 
         if (map.get("deleted") != null) {
             this.deleted = (int) map.get("deleted");
