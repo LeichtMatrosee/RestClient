@@ -19,37 +19,109 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 
+/**
+ * Class represents the dialog to edit todo-lists. Shows todo-list information, as well as entries.
+ * @author Gerrit Koppe
+ * @version 1.0
+ */
 public class ListWindow extends JDialog implements ActionListener {
 
-    JFrame parent;
+    /**
+     * Parent element for the dialog.
+     */
+    protected JFrame parent;
 
     // GUI Stuff
+    /**
+     * Panel on top of the dialog
+     */
     protected JPanel topPanel;
+    /**
+     * Label containing information about last action
+     */
     protected JLabel infoLabel;
     
+    /**
+     * Panel with information about the todo-list itself.
+     */
     protected JPanel listInfos;
+    /**
+     * Label displaying the word "Name".
+     */
     protected JTextField nameLabel;
+    /**
+     * Button that is pressed, whenever the name is supposed to be updated in the API DB
+     */
     protected JButton updateName;
 
+    /**
+     * Panel for all buttons for editing entries.
+     */
     protected JPanel buttonPanel;
+    /**
+     * Button to load all entries from the API
+     */
     protected JButton loadAllEntries;
+    /**
+     * Button for editing a single entry
+     */
     protected JButton editEntry;
+    /**
+     * Button for deleting a single entry.
+     */
     protected JButton deleteEntry;
+    /**
+     * Button for adding a new entry
+     */
     protected JButton addEntry;
 
+    /**
+     * Panel containing a list of all entries.
+     */
     protected JPanel listPanel;
+    /**
+     * List containing all entries.
+     */
     protected JList<String> entryList;
+    /**
+     * Model for managing all entries
+     */
     protected DefaultListModel<String> dlm;
+    /**
+     * Scrollbar for the {@link #entryList}
+     */
     protected JScrollPane listScroller;
 
+    /**
+     * Used for all communication with the API
+     */
     protected RestCommunicator rc;
 
+    /**
+     * UUID of the todo-list
+     */
     private String listGuid;
+    /**
+     * Name of the todo-list
+     */
     private String listName;
+    /**
+     * Text that is displayed in the info label
+     */
     private String info = "";
 
+    /**
+     * Contains all background information of the entries like uuid etc.
+     */
     private ArrayList<HashMap<String,String>> entries;
 
+    /**
+     * Constructor for the ListWindow. Builds all GUI components, retrieves information about the list and it's entries from the api.
+     * @param parent Frame from which the window is opened.
+     * @param title Title of the Window.
+     * @param listGuid UUID of the todo-list to be edited.
+     * @param rc RestCommunicator of the parent window.
+     */
     public ListWindow (JFrame parent, String title, String listGuid, RestCommunicator rc) {
         super(parent, false);
         try {
@@ -182,6 +254,9 @@ public class ListWindow extends JDialog implements ActionListener {
         this.setVisible(true);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == this.loadAllEntries) {
@@ -197,15 +272,28 @@ public class ListWindow extends JDialog implements ActionListener {
         }
     }
 
+    /**
+     * Updates the label {@link #infoLabel} in the {@link #topPanel} that displays information about the last action
+     * to be the passed String. Sets {@link #info} and then calls {@link #updateInfoMessage()}
+     * @param msg String that is to be shown in {@link #infoLabel}
+     */
     private void updateInfoMessage(String msg) {
         this.info = msg;
         this.updateInfoMessage();
     }
 
+    /**
+     * Sets the text of {@link #infoLabel} to be {@link #info}.
+     */
     private void updateInfoMessage() {
         this.infoLabel.setText(this.info);
     }
 
+    /**
+     * Callback method for {@link #actionPerformed(ActionEvent)}, when the button {@link #updateName} is pressed.
+     * Sends http request to API in order to update name there. 
+     * If Exception occurs, {@link #updateInfoMessage(String)} is called to show cause of failure in {@link #infoLabel}.
+     */
     private void nameUpdated() {
         String oldName = this.listName;
         String newName = this.nameLabel.getText();
@@ -226,7 +314,12 @@ public class ListWindow extends JDialog implements ActionListener {
         this.listName = newName;
         this.updateInfoMessage("Listeninformationen aktualisiert");
     }
-
+    /**
+     * Callback method for {@link #actionPerformed(ActionEvent)}, when the button {@link #loadAllEntries} is pressed.
+     * Fetches all entry of the list specified by {@link #listGuid} from the API.
+     * Also updates the entries shown in GUI by updating {@link #entries} and calling {@link #updateDlm()}.
+     * If Exception occurs, {@link #updateInfoMessage(String)} is called to show cause of failure in {@link #infoLabel}.
+     */
     private void loadEntries() {
         this.dlm.removeAllElements();
         ResponseData rd;
@@ -258,7 +351,13 @@ public class ListWindow extends JDialog implements ActionListener {
             this.updateInfoMessage("Could not load entries, statuscode=" + rd.getStatusCode());
         }
     }
-
+    /**
+     * Callback method for {@link #actionPerformed(ActionEvent)}, when the button {@link #editEntry} is pressed.
+     * Opens new AddWindow with information of current entry, in order to make it editable.
+     * After window is closed, sends http request to api to update the entry.
+     * Also updates the entries shown in GUI by updating {@link #entries} and calling {@link #updateDlm()}.
+     * If Exception occurs, {@link #updateInfoMessage(String)} is called to show cause of failure in {@link #infoLabel}.
+     */
     private void editCurrentEntry() {
         int index = this.entryList.getSelectedIndex();
         if (index == -1) return;
@@ -292,6 +391,12 @@ public class ListWindow extends JDialog implements ActionListener {
         this.updateInfoMessage("Eintrag bearbeitet");
     }
 
+    /**
+     * Callback method for {@link #actionPerformed(ActionEvent)}, when the button {@link #deleteEntry} is pressed.
+     * Sends http request to api to delete the entry.
+     * Also updates the entries shown in GUI by updating {@link #entries} and calling {@link #updateDlm()}.
+     * If Exception occurs, {@link #updateInfoMessage(String)} is called to show cause of failure in {@link #infoLabel}.
+     */
     private void deleteCurrentEntry() {
         int index = this.entryList.getSelectedIndex();
         if (index == -1) return;
@@ -314,6 +419,13 @@ public class ListWindow extends JDialog implements ActionListener {
         this.updateInfoMessage("Eintrag gelöscht");
     }
 
+    /**
+     * Callback method for {@link #actionPerformed(ActionEvent)}, when the button {@link #addEntry} is pressed.
+     * Opens new AddWindow to let the user add a new entry.
+     * After window is closed, sends http request to api to post the entry.
+     * Also updates the entries shown in GUI by updating {@link #entries} and calling {@link #updateDlm()}.
+     * If Exception occurs, {@link #updateInfoMessage(String)} is called to show cause of failure in {@link #infoLabel}.
+     */
     private void addNewEntry() {
         AddWindow add = new AddWindow((JFrame) super.getParent(), "Neuer Eintrag", "", "", true);
 
@@ -353,6 +465,10 @@ public class ListWindow extends JDialog implements ActionListener {
         this.updateInfoMessage("Eintrag hinzugefügt");
     }
 
+    /**
+     * Updates the {@link #dlm} in order to show all entries of the todo-list.
+     * Clears dlm, iterates through {@link #entries} and adds every entry in it to the dlm.
+     */
     private void updateDlm() {
         this.dlm.removeAllElements();
 
