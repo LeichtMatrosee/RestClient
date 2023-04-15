@@ -319,6 +319,10 @@ public class ListWindow extends JDialog implements ActionListener {
         AddWindow add = new AddWindow((JFrame) super.getParent(), "Neuer Eintrag", "", "", true);
 
         String name = add.getName();
+        if (name.equals("") || name == null) {
+            this.updateInfoMessage("No Name given!");
+            return;
+        }
         String description = add.getDescription();
 
         ResponseData rd;

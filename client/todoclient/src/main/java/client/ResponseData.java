@@ -91,11 +91,14 @@ public class ResponseData {
 
     /*************** SETTERS AND GETTERS ***********************/
     
+
+    public EntryData[] getEntries() {
+        return this.entries;
+    }
+
     public void setEntries(EntryData[] entries) {
         this.entries = entries;
     }
-
-    public EntryData[] getEntries() { return this.entries; }
 
     public int getWritten() {
         return this.written;
@@ -129,20 +132,33 @@ public class ResponseData {
         this.entriesUpdated = entriesUpdated;
     }
 
+    public boolean isSuccess() {
+        return this.success;
+    }
+
     public boolean getSuccess() {
         return this.success;
     }
 
-    public void setSuccess(boolean s) {
-        this.success = s;
+    public void setSuccess(boolean success) {
+        this.success = success;
     }
 
     public String getMessage() {
         return this.message;
     }
 
-    public void setMessage(String msg) {
-        this.message = msg;
+    public void setMessage(String message) {
+        this.message = message;
     }
+
+    public int getStatusCode() {
+        return this.statusCode;
+    }
+
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
+    
 
 }

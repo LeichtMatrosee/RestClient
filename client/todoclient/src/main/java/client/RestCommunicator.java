@@ -286,7 +286,7 @@ public class RestCommunicator {
         return requestBuilder.build();
     }
 
-    private void buildBaseUrl() {
+    public void buildBaseUrl() {
         this.baseUrl = "http://" + this.host + ":" + this.port;
     }
     

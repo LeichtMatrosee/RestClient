@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -18,35 +16,34 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 
-public class TodoFrame extends JFrame implements AdjustmentListener, ActionListener {
+public class TodoFrame extends JFrame implements ActionListener {
     // GUI Components
-    protected JPanel topPanel;
-    protected JPanel infoPanel;
-    protected JPanel buttonPanel;
-    protected JPanel listPanel;
-    protected JPanel list;
-    protected JList<String> entries;
-    protected DefaultListModel<String> dlm;
-    protected JScrollPane listScroller;
+    private JPanel topPanel;
+    private JPanel infoPanel;
+    private JPanel buttonPanel;
+    private JPanel listPanel;
+    private JPanel list;
+    private JList<String> entries;
+    private DefaultListModel<String> dlm;
+    private JScrollPane listScroller;
 
     // Buttons for main Window
-    protected JButton loadAllLists;
-    protected JButton editList;
-    protected JButton deleteList;
-    protected JButton testApi;
-    protected JButton addList;
+    private JButton loadAllLists;
+    private JButton editList;
+    private JButton deleteList;
+    private JButton testApi;
+    private JButton addList;
  
-    protected JLabel apiInfo;
-    protected JLabel errorInfo;
+    private JLabel apiInfo;
+    private JLabel errorInfo;
+
+    private Menubar mb;
  
     // Config
-    protected ArrayList<HashMap<String, String>> todoLists;
-
-    // Configuration
-    private String bgColor = "green";
+    private ArrayList<HashMap<String, String>> todoLists;
 
     // Api Komponenten
-    RestCommunicator rc;
+    private RestCommunicator rc;
 
     public TodoFrame(String title) {
         try {
@@ -144,14 +141,12 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
     
         this.add(this.topPanel, BorderLayout.NORTH);
         this.add(this.listPanel);
+        // this.mb = new Menubar(this, this.rc.getHost(), this.rc.getPort());
+        // this.setJMenuBar(this.mb);
 
         this.setVisible(true);
     }
 
-    @Override
-    public void adjustmentValueChanged(AdjustmentEvent arg0) {
-
-    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -165,17 +160,23 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
             this.checkApi();
         } else if (e.getSource() == this.editList) {
             this.editLists();
+        } else if (e.getSource() == this.mb && e.getActionCommand().equals("Edited settings")) {
+            String host = this.mb.getHost();
+            int port = this.mb.getPort();
+            this.changeApiSettings(host, port);
         }
     }
 
-    public String getBgColor() {
-        return this.bgColor;
+    private void changeApiSettings(String host, int port) {
+        this.rc.setHost(host);
+        this.rc.setPort(port);
+        this.rc.buildBaseUrl();
     }
 
-    public void setBgColor(String bgColor) {
-        this.bgColor = bgColor;
-    }
-
+    /**
+     * Callback function for the edit list button. opens a new ListWindow in which the list can be edited.
+     * @return void
+     */
     private void editLists() {
         int index = this.entries.getSelectedIndex();
         String name, guid;
@@ -186,6 +187,10 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
         new ListWindow(this, name, guid, this.rc);
     }
 
+    /**
+     * Callback function for the button that checks, whether the API is reachable.
+     * Edits the private classmember {@link #apiInfo} and displays, whether API is online.
+     */
     private void checkApi() {
         boolean isWorking = this.rc.checkApiConnectivity();
 
@@ -198,10 +203,17 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
         return;
     }
 
+    /**
+     * Updates the private classmember {@link #errorInfo} and sets it's text to be message.
+     * @param message
+     */
     private void updateErrorInfo(String message) {
         this.errorInfo.setText(message);
     }
 
+    /**
+     * Callback function for the button that retrieves all existing todolists from the API.
+     */
     private void getAllLists() {
         ResponseData rd;
         this.dlm.removeAllElements();
@@ -220,6 +232,10 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
 
         this.updateErrorInfo("");
 
+        if (rd.getStatusCode() != 200) {
+            this.updateErrorInfo("Failed to get all lists, statuscode = " + rd.getStatusCode());
+            return;
+        } 
         for (int i = 0; i < rd.getEntries().length; i++) {
             this.todoLists.add(new HashMap<String,String>());
             this.todoLists.get(i).put("name", rd.getEntries()[i].getName());
@@ -257,6 +273,11 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
             return;
         }
 
+        if (rd.getStatusCode() != 200) {
+            this.updateErrorInfo("Failed to add list, statuscode = " + rd.getStatusCode());
+            return;
+        } 
+
         this.updateErrorInfo("");
 
         HashMap<String,String> newEntry = new HashMap<String, String>();
@@ -273,46 +294,25 @@ public class TodoFrame extends JFrame implements AdjustmentListener, ActionListe
         if (index == -1) return;
 
         String idToDelete = this.todoLists.get(index).get("id");
+        ResponseData rd;
         try {
             // this.rc.deleteList(new PostData("list", "", "", idToDelete));
             HashMap<String, String> listToDelete = new HashMap<String, String>();
             listToDelete.put("type", "list");
             listToDelete.put("listId", idToDelete);
             listToDelete.put("id", idToDelete);
-            this.rc.sendHttpRequest(new PostData(listToDelete), "deleteList");
+            rd = this.rc.sendHttpRequest(new PostData(listToDelete), "deleteList");
         } catch (Exception e) {
             if (!e.getMessage().equals("") || e.getMessage() != null) {
                 this.updateErrorInfo(e.getMessage());
             }
             return;
         }
-
-        try {
-            HashMap<String, String> entryGetter = new HashMap<String, String>();
-            entryGetter.put("type", "entry");
-            entryGetter.put("listId", idToDelete);
-            ResponseData rd = this.rc.sendHttpRequest(new PostData(entryGetter), "getEntries");
-            // ResponseData rd = this.rc.getEntriesFromList(new PostData(entryGetter));
-
-            int deleted = 0;
-            for (int i = 0; i < rd.getEntries().length; i++) {
-                HashMap<String, String> entryToDelete = new HashMap<String, String>();
-                entryToDelete.put("type", "entry");
-                entryToDelete.put("listId", idToDelete);
-                entryToDelete.put("entryId", rd.getEntries()[i].getId());
-                rd = this.rc.sendHttpRequest(new PostData(entryToDelete), "deleteEntry");
-
-                deleted += rd.getDeleted();
-            }
-
-            System.out.println("Deleted: " + deleted);
-        } catch (Exception e) {
-            if (!e.getMessage().equals("") || e.getMessage() != null) {
-                this.updateErrorInfo(e.getMessage());
-            }
+        
+        if (rd.getStatusCode() != 200) {
+            this.updateErrorInfo("Failed to delete list, statuscode = " + rd.getStatusCode());
             return;
-        }
-
+        } 
         this.todoLists.remove(index);
         this.updateErrorInfo("");
         this.updateDlm();
