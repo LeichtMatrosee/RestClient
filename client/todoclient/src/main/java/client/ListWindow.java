@@ -17,7 +17,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.UIManager;
 
 public class ListWindow extends JDialog implements ActionListener {
@@ -30,7 +29,6 @@ public class ListWindow extends JDialog implements ActionListener {
     
     protected JPanel listInfos;
     protected JTextField nameLabel;
-    protected JTextPane descriptionPane;
     protected JButton updateName;
 
     protected JPanel buttonPanel;
@@ -48,13 +46,9 @@ public class ListWindow extends JDialog implements ActionListener {
 
     private String listGuid;
     private String listName;
-    private String listDesc;
     private String info = "";
 
     private ArrayList<HashMap<String,String>> entries;
-
-
-
 
     public ListWindow (JFrame parent, String title, String listGuid, RestCommunicator rc) {
         super(parent, false);
@@ -103,16 +97,11 @@ public class ListWindow extends JDialog implements ActionListener {
         JLabel nameInfo = new JLabel("Name");
         this.nameLabel = new JTextField();
 
-        JLabel descInfo = new JLabel("Beschreibung");
-        this.descriptionPane = new JTextPane();
-
-        this.updateName = new JButton("Name / Beschreibung speichern");
+        this.updateName = new JButton("Name speichern");
         this.updateName.addActionListener(this);
         
         this.listInfos.add(nameInfo);
         this.listInfos.add(this.nameLabel);
-        this.listInfos.add(descInfo);
-        this.listInfos.add(this.descriptionPane);
         this.listInfos.add(this.updateName);
 
 
@@ -124,6 +113,22 @@ public class ListWindow extends JDialog implements ActionListener {
         this.topPanel.add(this.listInfos);
         this.topPanel.add(this.buttonPanel);
 
+        this.listPanel = new JPanel();
+        this.listPanel.setLayout(new BorderLayout());
+
+        // Configure entries
+        this.dlm = new DefaultListModel<String>();
+        this.entryList = new JList<String>();
+        this.entryList.setModel(dlm);
+        this.listPanel.add(this.entryList, BorderLayout.CENTER);
+        this.entryList.setLayoutOrientation(JList.VERTICAL);
+
+        // Configure Scrollbar
+        this.listScroller = new JScrollPane();
+        this.listScroller.setViewportView(entryList);
+        this.listPanel.add(this.listScroller, BorderLayout.CENTER);
+
+        this.entries = new ArrayList<HashMap<String,String>>();
         ResponseData rd;
         // Load information about list
         try {
@@ -136,28 +141,20 @@ public class ListWindow extends JDialog implements ActionListener {
             return;
         }
 
-        this.listPanel = new JPanel();
-        this.listPanel.setLayout(new FlowLayout());
+        String stMsg = "";
 
-        // Configure entries
-        this.dlm = new DefaultListModel<String>();
-        this.entryList = new JList<String>();
-        this.entryList.setModel(dlm);
-        this.listPanel.add(this.entryList);
-        this.entryList.setLayoutOrientation(JList.VERTICAL);
-
-        // Configure Scrollbar
-        this.listScroller = new JScrollPane();
-        this.listScroller.setViewportView(entryList);
-        this.listPanel.add(this.listScroller, BorderLayout.CENTER);
-
-        for (int i = 0; i < rd.getEntries().length; i++) {
-            HashMap<String, String> newEntry = new HashMap<String, String>();
-            newEntry.put("id", rd.getEntries()[i].getId());
-            newEntry.put("name", rd.getEntries()[i].getName());
-            newEntry.put("description", rd.getEntries()[i].getDescription());
-
-            this.dlm.addElement(rd.getEntries()[i].getName());
+        if (rd.getStatusCode() == 200) {
+            for (int i = 0; i < rd.getEntries().length; i++) {
+                HashMap<String, String> newEntry = new HashMap<String, String>();
+                newEntry.put("id", rd.getEntries()[i].getId());
+                newEntry.put("name", rd.getEntries()[i].getName());
+                newEntry.put("description", rd.getEntries()[i].getDescription());
+                
+                this.entries.add(newEntry);
+                this.dlm.addElement(rd.getEntries()[i].getName());
+            }
+        } else {
+            stMsg += "Could not load entries for id " + listGuid + ". ";
         }
 
         // Load information about list
@@ -171,10 +168,13 @@ public class ListWindow extends JDialog implements ActionListener {
             return;
         }
 
-        this.nameLabel.setText(rd.getEntries()[0].getName());
-        this.descriptionPane.setText(rd.getEntries()[0].getDescription());
+        if (rd.getStatusCode() == 200) {
+            this.nameLabel.setText(rd.getEntries()[0].getName());
+        } else {
+            stMsg += "Could not load list information for id " + listGuid + ".";
+        }
 
-        this.entries = new ArrayList<HashMap<String,String>>();
+        this.infoLabel.setText(stMsg);
 
         this.add(this.topPanel, BorderLayout.NORTH);
         this.add(this.listPanel);
@@ -209,26 +209,21 @@ public class ListWindow extends JDialog implements ActionListener {
     private void nameUpdated() {
         String oldName = this.listName;
         String newName = this.nameLabel.getText();
-        String oldDesc = this.listDesc;
-        String newDesc = this.descriptionPane.getText();
         
         try {
             HashMap<String,String> newValues = new HashMap<String,String>();
             newValues.put("type", "list");
             newValues.put("listId", this.listGuid);
             newValues.put("name", newName);
-            newValues.put("description", newDesc);
             // this.rc.updateList(new PostData(newValues));
             this.rc.sendHttpRequest(new PostData(newValues), "updateList");
         } catch (Exception e) {
             this.nameLabel.setText(oldName);
-            this.descriptionPane.setText(oldDesc);
             this.updateInfoMessage("Updating list infos failed with a " + e.getClass().getName() + ", msg: " + e.getMessage());
             return;
         } 
 
         this.listName = newName;
-        this.listDesc = newDesc;
         this.updateInfoMessage("Listeninformationen aktualisiert");
     }
 
@@ -246,29 +241,33 @@ public class ListWindow extends JDialog implements ActionListener {
             return;
         }
 
-        for (int i = 0; i < rd.getEntries().length; i++) {
+        if (rd.getStatusCode() == 200) {
             this.entries.clear();
-            HashMap<String, String> newEntry = new HashMap<String, String>();
-            newEntry.put("id", rd.getEntries()[i].getId());
-            newEntry.put("name", rd.getEntries()[i].getName());
-            newEntry.put("description", rd.getEntries()[i].getDescription());
+            for (int i = 0; i < rd.getEntries().length; i++) {
+                HashMap<String, String> newEntry = new HashMap<String, String>();
+                newEntry.put("id", rd.getEntries()[i].getId());
+                newEntry.put("name", rd.getEntries()[i].getName());
+                newEntry.put("description", rd.getEntries()[i].getDescription());
 
-            this.entries.add(newEntry);
+                this.entries.add(newEntry);
+            }
+
+            this.updateDlm();
+            this.updateInfoMessage("Einträge geladen");
+        } else {
+            this.updateInfoMessage("Could not load entries, statuscode=" + rd.getStatusCode());
         }
-
-        this.updateDlm();
-        this.updateInfoMessage("Einträge geladen");
     }
 
     private void editCurrentEntry() {
         int index = this.entryList.getSelectedIndex();
         if (index == -1) return;
 
-        String idToDelete = this.entries.get(index).get("id");
+        String idToEdit = this.entries.get(index).get("id");
         String name = this.entries.get(index).get("name");
         String desc = this.entries.get(index).get("description");
         
-        AddWindow add = new AddWindow((JFrame) super.getParent(), "Eintrag bearbeiten", name, desc, true);
+        AddWindow add = new AddWindow((JFrame) this.getParent(), "Eintrag bearbeiten", name, desc, true);
 
         String newName = add.getName();
         String newDesc = add.getDescription();
@@ -276,7 +275,7 @@ public class ListWindow extends JDialog implements ActionListener {
         try {
             HashMap<String, String> newEntry = new HashMap<String, String>();
             newEntry.put("listId", this.listGuid);
-            newEntry.put("entryId", idToDelete);
+            newEntry.put("entryId", idToEdit);
             newEntry.put("name", newName);
             newEntry.put("description", newDesc);
             // this.rc.updateEntry(new PostData(newEntry));
