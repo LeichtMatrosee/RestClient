@@ -175,7 +175,6 @@ public class TodoFrame extends JFrame implements ActionListener {
 
     /**
      * Callback function for the edit list button. opens a new ListWindow in which the list can be edited.
-     * @return void
      */
     private void editLists() {
         int index = this.entries.getSelectedIndex();

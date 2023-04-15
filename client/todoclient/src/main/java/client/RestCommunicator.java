@@ -21,12 +21,36 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 
+/**
+ * Class for communicating with the REST API. This class get's most of the information it's working on
+ * from the file Config/RestConfig.json
+ */
 public class RestCommunicator {
+    /**
+     * The host the Rest API is running on. Localhost by default.
+     */
     private String host = "localhost";
+    /**
+     * Port the Rest API is running on. 6000 by default.
+     */
     private int port = 6000;
+    /**
+     * Base URL of the Rest API. This is constructed on it's own.
+     */
     private String baseUrl;
+    /**
+     * JSON Object containing all information from the Config/RestConfig.json file.
+     */
     private JSONObject cfg;
 
+    /**
+     * Standard Constructor for the RestCommunicator. All information about Endpoints, host, port etc.
+     * is retrieved from the config file.
+     * @throws FileNotFoundException Is thrown, whenever the config file could not be found.
+     * @throws IOException Gets thrown, when the Config file could not be read.
+     * @throws JSONException Gets thrown, when the config file could not be parsed into a JSON Object.
+     * Configuration is probably syntactically wrong.
+     */
     public RestCommunicator() throws FileNotFoundException, IOException, JSONException {
         // Get Config file
         File cfgFile = new File("" + System.getProperty("user.dir") + "\\Config\\RestConfig.json");
@@ -50,6 +74,11 @@ public class RestCommunicator {
         this.baseUrl = "http://" + this.host + ":" + this.port;
     }
 
+    /**
+     * Checks, whether the API is reachable by trying to retreive all lists from it.
+     * If connection ends in an Exception, the method returns false, otherwise it returns true.
+     * @return true, if API is reachable, false otherwise
+     */
     public boolean checkApiConnectivity() {
         try {
             // Build the httprequest
@@ -72,6 +101,9 @@ public class RestCommunicator {
         return true;
     }
 
+    /**
+     * Drops the whole of the rest API.
+     */
     public void drop() {
         try {
             // Build the httprequest
@@ -88,6 +120,18 @@ public class RestCommunicator {
         }
     }
 
+    /**
+     * Wrapper Method for sending all http requests to the Rest API. First calls {@link #buildHttpRequest(PostData, String)}, which
+     * configures the request then sends it and parses the Response into a ResponseData object containing all inforation from the API
+     * response.
+     * @param p Contains all information, that is needed for the API Request.
+     * @param endpointName Name of the endpoint as specified in the config file
+     * @return ResponseData object containing all the information from the API Response.
+     * @throws IOException Is thrown, when something went wrong.
+     * @throws URISyntaxException Is thrown, when the Syntax of the URL is incorrect.
+     * @throws InterruptedException Is thrown, when the connection with the API gets interrupted.
+     * @throws JSONException Is thrown, when body can't be build properly.
+     */
     public ResponseData sendHttpRequest(PostData p, String endpointName) throws IOException, URISyntaxException, InterruptedException, JSONException {
         // Build the httprequest
         HttpRequest postRequest = this.buildHttpRequest(p, endpointName);
@@ -108,7 +152,6 @@ public class RestCommunicator {
 
     /**
      * Analyses the Config to find the endpoint with the given name and returns that.
-     * 
      * @param endpointName Name of the endpoint (set in config)
      * @return JSONObject with all information about the found endpoint
      * @throws JSONException Throws, when no endpoint with given name could be found
@@ -139,7 +182,6 @@ public class RestCommunicator {
      * values from the PostData object.
      * Iterates through the array "url" to set all url params. If a param in the config matches one of the PostData params,
      * it gets added to the url as a param.
-     * 
      * @param epCfg Configuration of current endpoint
      * @param p Data to be posted
      * @return Url of the endpoint
@@ -209,6 +251,13 @@ public class RestCommunicator {
         return url;
     }
 
+    /**
+     * Parses the attribute name so that it conforms with the Rest API.
+     * If listId is given, list_id is returned.
+     * If entryId is given, entry_id is returned.
+     * @param attr Name of the attribute to be parsed.
+     * @return Parsed name.
+     */
     private String parseAttr(String attr) {
         if (attr.equals("listId")) {
             return "list_id";
@@ -218,10 +267,11 @@ public class RestCommunicator {
     }
 
     /**
-     * Builds the JSON Object for the Body for Post and Put requests
-     * 
+     * Builds the JSON Object for the Body for Post, Patch and Put requests.
+     * Checks the Endpoint config epCfg and puts all attributes from p into a JSONObject, that are defined in
+     * epCfg.params.body.
      * @param p Object containing all data for the Post Request
-     * @param entity Either "List" or "entry"
+     * @param entity Either "List" or "entry". Isn't really needed though.
      * @param epCfg Configuration of current endpoint
      * @return JSONObject containing all key value pairs for the body of the post request
      * @throws JSONException Is thrown, when a key in JSONObject is accessed, that does not exist
@@ -253,8 +303,10 @@ public class RestCommunicator {
     }
 
     /**
-     * Builds the HttpRequest Object for the Request, depending on the config
-     * 
+     * Builds the HttpRequest Object for the Request, depending on the config.
+     * First calls {@link #getEndPoint(String)} to retrieve the endpoint from the config, depending on epName.
+     * Then builds endpoint URL by calling {@link #buildEnpointUrl(JSONObject, PostData)}.
+     * Finally builds the HttpRequest. For Patch and post, the body is build by {@link #bodyBuilder(PostData, String, JSONObject)}.
      * @param p Object containing all relevant information for the request
      * @param epName Name of the endpoint (must match endpoint in config)
      * @return Complete HttpRequest object, that can be sent to API
@@ -286,15 +338,33 @@ public class RestCommunicator {
         return requestBuilder.build();
     }
 
+    /**
+     * Builds the base url of the API, by concatanating the host and the port
+     */
     public void buildBaseUrl() {
         this.baseUrl = "http://" + this.host + ":" + this.port;
     }
     
-    /**************** SETTERS AND GETTERS ****************/
+    /**
+     * Sets the host name to the given String and builds the Base URL anew, by calling {@link #buildBaseUrl()}.
+     * @param host Hostname or IP Adress
+     */
     public void setHost(String host) { this.host = host; this.buildBaseUrl(); }
+    /**
+     * Retrieves the current hostname.
+     * @return Current hostname.
+     */
     public String getHost() { return this.host; }
     
+    /**
+     * Sets the port for the API and builds the Base URL anew, by calling {@link #buildBaseUrl()}.
+     * @param port New Port
+     */
     public void setPort(int port) { this.port = port; this.buildBaseUrl(); }
+    /**
+     * Retrieves the current port of the api.
+     * @return
+     */
     public int getPort() { return this.port; }
 
 }
