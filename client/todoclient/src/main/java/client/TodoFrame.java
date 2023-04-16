@@ -2,6 +2,7 @@ package client;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -91,8 +92,7 @@ public class TodoFrame extends JFrame implements ActionListener {
     private JLabel errorInfo;
 
     /**
-     * @deprecated
-     * Might be used again in the future but right now deprecated.
+     * MenuBar implemented as standard JMenuBar for all instances of this class.
      */
     private Menubar mb;
  
@@ -164,7 +164,7 @@ public class TodoFrame extends JFrame implements ActionListener {
 
         // Panel with general infos
         this.infoPanel = new JPanel();
-        this.infoPanel.setLayout(new FlowLayout());
+        this.infoPanel.setLayout(new GridLayout(2,1));
 
         // Panel at the top of frame
         this.topPanel = new JPanel();
@@ -215,10 +215,11 @@ public class TodoFrame extends JFrame implements ActionListener {
     
         this.add(this.topPanel, BorderLayout.NORTH);
         this.add(this.listPanel);
-        // this.mb = new Menubar(this, this.rc.getHost(), this.rc.getPort());
-        // this.setJMenuBar(this.mb);
+        this.mb = new Menubar(this, this.rc.getHost(), this.rc.getPort());
+        this.setJMenuBar(this.mb);
 
         this.windows = new ArrayList<ListWindow>();
+        this.apiInfo.setText("API URL: " + this.rc.getBaseUrl());
 
         this.setVisible(true);
     }
@@ -244,7 +245,7 @@ public class TodoFrame extends JFrame implements ActionListener {
             this.checkApi();
         } else if (e.getSource() == this.editList) {
             this.editLists();
-        } else if (e.getSource() == this.mb && e.getActionCommand().equals("Edited settings")) {
+        } else if (e.getSource() == this.mb && e.getActionCommand().equals("editedSettings")) {
             String host = this.mb.getHost();
             int port = this.mb.getPort();
             this.changeApiSettings(host, port);
@@ -254,7 +255,6 @@ public class TodoFrame extends JFrame implements ActionListener {
     }
 
     /**
-     * @deprecated
      * Used to change host and port on RestCommunicator object. Will be used again, when the Menubar works.
      * @param host Host the Rest API is on.
      * @param port Port the Rest API is on.
@@ -263,11 +263,12 @@ public class TodoFrame extends JFrame implements ActionListener {
         this.rc.setHost(host);
         this.rc.setPort(port);
         this.rc.buildBaseUrl();
+        this.apiInfo.setText("API URL: " + this.rc.getBaseUrl());
     }
 
     /**
-     * Iterates through {@link #windows} and checks, if any of the windows is not visible anymore.
-     * If one isn't, all list information gets loaded from API again. All non-visible Windows will be removed from {@link #windows}.
+     * Iterates through {@link #windows} and checks, if any of the windows is not visible anymore. If it isn't, it's removed from
+     * the list.
      */
     private void checkAllSubWindows() {
         Stack<Integer> indicesToDispose = new Stack<Integer>();
@@ -275,9 +276,6 @@ public class TodoFrame extends JFrame implements ActionListener {
             if (!this.windows.get(i).isVisible()) {
                 indicesToDispose.push(i);
             }
-        }
-        if (!indicesToDispose.empty()) {
-            this.getAllLists();
         }
         while (!indicesToDispose.empty()) {
             this.windows.remove((int) indicesToDispose.pop());
@@ -289,6 +287,10 @@ public class TodoFrame extends JFrame implements ActionListener {
      */
     private void editLists() {
         int index = this.entries.getSelectedIndex();
+        if (index == -1) {
+            this.updateErrorInfo("Keine Liste ausgewählt!");
+            return;
+        }
         String name, guid;
 
         name = this.todoLists.get(index).get("name");
@@ -307,9 +309,9 @@ public class TodoFrame extends JFrame implements ActionListener {
         boolean isWorking = this.rc.checkApiConnectivity();
 
         if (isWorking) {
-            this.apiInfo.setText("API verfügbar");
+            this.errorInfo.setText("API verfügbar");
         } else {
-            this.apiInfo.setText("API nicht verfügbar");
+            this.errorInfo.setText("API nicht verfügbar");
         }
 
         return;
@@ -343,13 +345,11 @@ public class TodoFrame extends JFrame implements ActionListener {
             return;
         }
 
-        this.updateErrorInfo("");
-
         if (rd.getStatusCode() != 200) {
             this.updateErrorInfo("Failed to get all lists, statuscode = " + rd.getStatusCode());
             return;
         }
-        // TODO see, if this does what I hope it does.
+
         this.todoLists.clear();
         this.dlm.removeAllElements();
 
@@ -363,7 +363,7 @@ public class TodoFrame extends JFrame implements ActionListener {
         for (int i = 0; i < this.todoLists.size(); i++) {
             this.dlm.addElement(this.todoLists.get(i).get("name"));
         }
-        
+        this.updateErrorInfo("Listen geladen!");
         this.entries.setModel(this.dlm);
     }
 
@@ -411,6 +411,7 @@ public class TodoFrame extends JFrame implements ActionListener {
         this.todoLists.add(newEntry);
 
         this.updateDlm();
+        this.updateErrorInfo("Liste hinzugefügt!");
     }
 
     /**
@@ -447,6 +448,7 @@ public class TodoFrame extends JFrame implements ActionListener {
         this.todoLists.remove(index);
         this.updateErrorInfo("");
         this.updateDlm();
+        this.updateErrorInfo("Liste und alle zugehörigen Einträge gelöscht!");
     }
 
     /**

@@ -377,6 +377,11 @@ public class ListWindow extends JDialog implements ActionListener {
         String newName = add.getName();
         String newDesc = add.getDescription();
 
+        if (newName.equals("")) {
+            this.updateInfoMessage("Bearbeitung abgebrochen!");
+            return;
+        }
+
         try {
             HashMap<String, String> newEntry = new HashMap<String, String>();
             newEntry.put("type", "entry");
@@ -424,7 +429,7 @@ public class ListWindow extends JDialog implements ActionListener {
             return;
         }
 
-        this.entryList.remove(index);
+        this.entries.remove(index);
         this.updateDlm();
         this.updateInfoMessage("Eintrag gelöscht");
     }

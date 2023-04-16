@@ -370,4 +370,10 @@ public class RestCommunicator {
      */
     public int getPort() { return this.port; }
 
+    /**
+     * Returns the current base Url of the API
+     * @return String version of the base url for the API
+     */
+    public String getBaseUrl() { return this.baseUrl; }
+
 }

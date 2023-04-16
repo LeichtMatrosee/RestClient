@@ -14,15 +14,41 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+/**
+ * Class represents the menubar of the application, implementing very option.
+ * @author LeichtMatrosee
+ * @version 1.0
+ */
 public class Menubar extends JMenuBar implements ActionListener {
+    /**
+     * Menu containing all settings. Contains {@link #apiSettings}
+     */
     private JMenu settings;
+    /**
+     * MenuItem managing api settings like port and host. Embedded in {@link #settings}
+     */
     private JMenuItem apiSettings;
 
+    /**
+     * Host of the RestCommunicator instance of the TodoFrame implementing this class
+     */
     private String host;
+    /**
+     * Port of the RestCommunicator instance of the TodoFrame implementing this class
+     */
     private int port;
 
+    /**
+     * Parent of the instance of this class. Probably deprecated, not sure yet
+     */
     private JFrame parentFrame;
 
+    /**
+     * Default constructor for this class. Builds the entire JMenuBar structure.
+     * @param parentFrame Frame that implements this menu
+     * @param host Current host for the RestCommunicator of the parent frame
+     * @param port Current port for the RestCommunicator of the parent frame
+     */
     public Menubar(JFrame parentFrame, String host, int port) {
         super();
         
@@ -52,7 +78,8 @@ public class Menubar extends JMenuBar implements ActionListener {
     }
 
     /**
-     * @deprecated
+     * Shows a new Dialog in which the user can input host and port of the API.
+     * Triggers an ActionEvent, when the window is disposed
      */
     private void showApiSettingWindow() {
         JDialog diag = new JDialog(this.parentFrame, "API Einstellungen", true);
@@ -81,22 +108,38 @@ public class Menubar extends JMenuBar implements ActionListener {
         this.host = hostField.getText();
         this.port = Integer.parseInt(portField.getText());
 
-        ActionEvent e = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "Edited settings");
-        this.getParent().getParent().getParent().dispatchEvent(e);
+        ActionEvent e = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "editedSettings");
+        ((TodoFrame) (this.getParent().getParent().getParent())).actionPerformed(e);
     }
 
+    /**
+     * Retrieves the host of the API that was passed in the constructor.
+     * @return Host of the API.
+     */
     public String getHost() {
         return this.host;
     }
 
+    /**
+     * Sets the host of the API.
+     * @param host Host of the API
+     */
     public void setHost(String host) {
         this.host = host;
     }
 
+    /**
+     * Retrieves the port of the API that was passed in the constructor.
+     * @return Port of the API.
+     */
     public int getPort() {
         return this.port;
     }
 
+    /**
+     * Sets the port of the API.
+     * @param port Port of the API.
+     */
     public void setPort(int port) {
         this.port = port;
     }
