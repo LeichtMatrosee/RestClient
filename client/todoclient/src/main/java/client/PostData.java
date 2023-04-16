@@ -122,7 +122,7 @@ public class PostData {
     public void setSuccessful(boolean success) { this.successful = success; }
     /**
      * @deprecated
-     * @return
+     * @return Returns, whether the API request was successful
      */
     public boolean getSuccessful() { return this.successful; }
 

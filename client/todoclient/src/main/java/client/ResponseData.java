@@ -124,6 +124,9 @@ public class ResponseData {
      */
     private int statusCode;
 
+    /**
+     * Classname of the thrown exception, when the class is instanciated with an Exception.
+     */
     private String exceptionType;
     
     /**
@@ -228,7 +231,7 @@ public class ResponseData {
 
     /**
      * @deprecated
-     * @param total
+     * @param total Set, how many entries were written
      */
     public void setTotal(int total) {
         this.total = total;
@@ -276,7 +279,7 @@ public class ResponseData {
 
     /**
      * @deprecated
-     * @param success
+     * @param success Set, whether the API Request was successful
      */
     public void setSuccess(boolean success) {
         this.success = success;

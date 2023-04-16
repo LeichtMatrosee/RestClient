@@ -277,6 +277,7 @@ public class RestCommunicator {
      * @param epCfg Configuration of current endpoint
      * @return JSONObject containing all key value pairs for the body of the post request
      * @throws JSONException Is thrown, when a key in JSONObject is accessed, that does not exist
+     * @throws IOException is thrown, whenever something unexpected happens.
      */
     private JSONObject bodyBuilder(PostData p, String entity, JSONObject epCfg) throws JSONException, IOException {
         // Get all params for the body
@@ -365,7 +366,7 @@ public class RestCommunicator {
     public void setPort(int port) { this.port = port; this.buildBaseUrl(); }
     /**
      * Retrieves the current port of the api.
-     * @return
+     * @return Current port the instance is communicating with.
      */
     public int getPort() { return this.port; }
 

@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Stack;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -17,7 +18,7 @@ import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 
 /**
- * Represents the base frame of the application.
+ * Represents the base frame of the application. 
  * In this frame, all todo-lists are managed.
  * @version 1.0
  * @author LeichtMatrosee
@@ -107,6 +108,11 @@ public class TodoFrame extends JFrame implements ActionListener {
      * @see client.RestCommunicator for more information.
      */
     private RestCommunicator rc;
+
+    /**
+     * List of all open subwindows.
+     */
+    private ArrayList<ListWindow> windows;
 
     /**
      * Standard constructor for the TodoFrame. Builds the entire GUI and instanciates a RestCommunicator
@@ -212,14 +218,22 @@ public class TodoFrame extends JFrame implements ActionListener {
         // this.mb = new Menubar(this, this.rc.getHost(), this.rc.getPort());
         // this.setJMenuBar(this.mb);
 
+        this.windows = new ArrayList<ListWindow>();
+
         this.setVisible(true);
     }
 
     /**
+     * Actionlistener for all Buttons. Also calls {@link #checkAllSubWindows()} on every trigger.
      * {@inheritDoc}
      */
     @Override
     public void actionPerformed(ActionEvent e) {
+        for (int i = 0; i < this.windows.size(); i++) {
+            if (e.getSource() == this.windows.get(i).getUpdateName() && e.getActionCommand().equals("updateNowDude")) {
+                this.getAllLists();
+            }
+        }
         if (e.getSource() == this.loadAllLists) {
             this.getAllLists();
         } else if (e.getSource() == this.addList) {
@@ -235,6 +249,8 @@ public class TodoFrame extends JFrame implements ActionListener {
             int port = this.mb.getPort();
             this.changeApiSettings(host, port);
         }
+
+        this.checkAllSubWindows();
     }
 
     /**
@@ -250,6 +266,25 @@ public class TodoFrame extends JFrame implements ActionListener {
     }
 
     /**
+     * Iterates through {@link #windows} and checks, if any of the windows is not visible anymore.
+     * If one isn't, all list information gets loaded from API again. All non-visible Windows will be removed from {@link #windows}.
+     */
+    private void checkAllSubWindows() {
+        Stack<Integer> indicesToDispose = new Stack<Integer>();
+        for (int i = 0; i < this.windows.size(); i++) {
+            if (!this.windows.get(i).isVisible()) {
+                indicesToDispose.push(i);
+            }
+        }
+        if (!indicesToDispose.empty()) {
+            this.getAllLists();
+        }
+        while (!indicesToDispose.empty()) {
+            this.windows.remove((int) indicesToDispose.pop());
+        }
+    }
+
+    /**
      * Callback function for the edit list button. opens a new ListWindow in which the list can be edited.
      */
     private void editLists() {
@@ -259,7 +294,9 @@ public class TodoFrame extends JFrame implements ActionListener {
         name = this.todoLists.get(index).get("name");
         guid = this.todoLists.get(index).get("id");
 
-        new ListWindow(this, name, guid, this.rc);
+        ListWindow lw = new ListWindow(this, name, guid, this.rc);
+        lw.getUpdateName().addActionListener(this);
+        this.windows.add(lw);
     }
 
     /**

@@ -41,6 +41,9 @@ public class Menubar extends JMenuBar implements ActionListener {
         this.parentFrame = parentFrame;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == this.apiSettings) {
@@ -48,6 +51,9 @@ public class Menubar extends JMenuBar implements ActionListener {
         }
     }
 
+    /**
+     * @deprecated
+     */
     private void showApiSettingWindow() {
         JDialog diag = new JDialog(this.parentFrame, "API Einstellungen", true);
         diag.setLayout(new BorderLayout());

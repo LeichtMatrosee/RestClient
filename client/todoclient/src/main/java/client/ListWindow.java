@@ -152,7 +152,7 @@ public class ListWindow extends JDialog implements ActionListener {
         this.editEntry.addActionListener(this);
 
         this.deleteEntry = new JButton("Eintrag löschen");
-        this.editEntry.addActionListener(this);
+        this.deleteEntry.addActionListener(this);
 
         this.addEntry = new JButton("Neuer Eintrag");
         this.addEntry.addActionListener(this);
@@ -313,6 +313,12 @@ public class ListWindow extends JDialog implements ActionListener {
 
         this.listName = newName;
         this.updateInfoMessage("Listeninformationen aktualisiert");
+        ActionEvent e = new ActionEvent(this.updateName, ActionEvent.ACTION_PERFORMED, "updateNowDude");
+        for (ActionListener a : this.updateName.getActionListeners()) {
+            if (a.equals(this.getParent())) {
+                a.actionPerformed(e);
+            }
+        }
     }
     /**
      * Callback method for {@link #actionPerformed(ActionEvent)}, when the button {@link #loadAllEntries} is pressed.
@@ -373,6 +379,7 @@ public class ListWindow extends JDialog implements ActionListener {
 
         try {
             HashMap<String, String> newEntry = new HashMap<String, String>();
+            newEntry.put("type", "entry");
             newEntry.put("listId", this.listGuid);
             newEntry.put("entryId", idToEdit);
             newEntry.put("name", newName);
@@ -399,7 +406,10 @@ public class ListWindow extends JDialog implements ActionListener {
      */
     private void deleteCurrentEntry() {
         int index = this.entryList.getSelectedIndex();
-        if (index == -1) return;
+        if (index == -1) {
+            this.updateInfoMessage("Kein Eintrag ausgewählt.");
+            return;
+        }
 
         String idToDelete = this.entries.get(index).get("id");
         try {
@@ -475,5 +485,13 @@ public class ListWindow extends JDialog implements ActionListener {
         for (int i = 0; i < this.entries.size(); i++) {
             this.dlm.addElement(this.entries.get(i).get("name"));
         }
+    }
+
+    /**
+     * Gets the button to update name
+     * @return Update name button
+     */
+    public JButton getUpdateName() {
+        return this.updateName;
     }
 }
