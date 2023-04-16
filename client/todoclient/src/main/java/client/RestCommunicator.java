@@ -24,6 +24,8 @@ import java.net.URLEncoder;
 /**
  * Class for communicating with the REST API. This class get's most of the information it's working on
  * from the file Config/RestConfig.json
+ * @author LeichtMatrosee
+ * @version 1.0
  */
 public class RestCommunicator {
     /**

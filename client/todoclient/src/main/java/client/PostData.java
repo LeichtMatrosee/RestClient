@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 /**
  * Instances of this class encapsulate all information that is sent to the API.
- * @author Gerrit Koppe
+ * @author LeichtMatrosee
  * @version 1.0
  */
 public class PostData {

@@ -6,14 +6,14 @@ import java.util.LinkedHashMap;
 
 /**
  * Class encapsulates the Response from the API in an easily and standardized manner.
- * @author Gerrit Koppe
+ * @author LeichtMatrosee
  * @version 1.0
  */
 public class ResponseData {
 
     /**
      * Class represents a single entry from the API Response
-     * @author Gerrit Koppe
+     * @author LeichtMatrosee
      * @version 1.0
      */
     public class EntryData {
@@ -129,7 +129,6 @@ public class ResponseData {
     /**
      * Primary Constructor for ResponseData object.
      * Map is the API response parsed into a easily accessable object.
-     * @see client.RestCommunicator.sendHttpRequest for more information on parsing the map.
      * @param map Parsed API Response. 
      * @param statusCode Status code of the http response.
      */
@@ -261,7 +260,7 @@ public class ResponseData {
 
     /**
      * Set how many entries were updated in request
-     * @param deleted How many entries were updated in request
+     * @param entriesUpdated How many entries were updated in request
      */
     public void setEntriesUpdated(int entriesUpdated) {
         this.entriesUpdated = entriesUpdated;
@@ -293,7 +292,7 @@ public class ResponseData {
 
     /**
      * Set message of api response
-     * @param deleted message of api response
+     * @param message message of api response
      */
     public void setMessage(String message) {
         this.message = message;
@@ -315,5 +314,20 @@ public class ResponseData {
         this.statusCode = statusCode;
     }
     
+    /**
+     * Gets the exceptionType of the API response.
+     * @return exceptionType of the API response.
+     */
+    public String getExceptionType() {
+        return this.exceptionType;
+    }
+
+    /**
+     * Set exceptionType of api response
+     * @param exceptionType exceptionType of api response
+     */
+    public void setExceptionType(String exceptionType) {
+        this.exceptionType = exceptionType;
+    }
 
 }

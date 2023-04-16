@@ -16,35 +16,103 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 
+/**
+ * Represents the base frame of the application.
+ * In this frame, all todo-lists are managed.
+ * @version 1.0
+ * @author LeichtMatrosee
+ */
 public class TodoFrame extends JFrame implements ActionListener {
     // GUI Components
+
+    /**
+     * Panel at the top of the frame. Holds {@link #infoPanel} and {@link #buttonPanel}.
+     */
     private JPanel topPanel;
+    /**
+     * Panel in the {@link #topPanel}. Holds {@link #apiInfo} and {@link #errorInfo}. 
+     */
     private JPanel infoPanel;
+    /**
+     * Panel in the {@link #topPanel}. Holds {@link #loadAllLists}, {@link #deleteList}, {@link #editList}, {@link #testApi} and {@link #addList}.
+     */
     private JPanel buttonPanel;
+    /**
+     * Panel in the center of the frame. Holds a list of all todo-lists. Holds {@link #list}.
+     */
     private JPanel listPanel;
+    /**
+     * Panel embedded in the {@link #listPanel}. Holds {@link #entries}, which in turn shows all todo-lists. Also holds the scrollbar {@link #listScroller}.
+     */
     private JPanel list;
+    /**
+     * Manages {@link #dlm}, which has a list of all todo-lists.
+     */
     private JList<String> entries;
+    /**
+     * Manages all todo-lists. Embedded in {@link #entries}.
+     */
     private DefaultListModel<String> dlm;
+    /**
+     * Scrollbar for when the list of todo-lists gets longer than the viewport of {@link #entries}. Embedded in {@link #list}.
+     */
     private JScrollPane listScroller;
 
     // Buttons for main Window
+    /**
+     * Embedded in {@link #buttonPanel}. Calls {@link #getAllLists()} on click.
+     */
     private JButton loadAllLists;
+    /**
+     * Embedded in {@link #buttonPanel}. Calls {@link #editLists()} on click.
+     */
     private JButton editList;
+    /**
+     * Embedded in {@link #buttonPanel}. Calls {@link #deleteLists()} on click.
+     */
     private JButton deleteList;
+    /**
+     * Embedded in {@link #buttonPanel}. Calls {@link #checkApi()} on click.
+     */
     private JButton testApi;
+    /**
+     * Embedded in {@link #buttonPanel}. Calls {@link #addLists()} on click.
+     */
     private JButton addList;
  
+    /**
+     * Label that displays information about wether the API is reachable. Embedded in {@link #infoPanel}.
+     */
     private JLabel apiInfo;
+    /**
+     * Label that displays information about the last error that occured. Embedded in {@link #infoPanel}.
+     */
     private JLabel errorInfo;
 
+    /**
+     * @deprecated
+     * Might be used again in the future but right now deprecated.
+     */
     private Menubar mb;
  
-    // Config
+    /**
+     * Backend information about all todo-lists. Every element of the ArrayList represents a single todo-list,
+     * including name and UUID.
+     * {@link #dlm} gets it's information from this structure. This one is always updated first.
+     */
     private ArrayList<HashMap<String, String>> todoLists;
 
-    // Api Komponenten
+    /**
+     * In charge of all communication with the API.
+     * @see client.RestCommunicator for more information.
+     */
     private RestCommunicator rc;
 
+    /**
+     * Standard constructor for the TodoFrame. Builds the entire GUI and instanciates a RestCommunicator
+     * for communication with the REST API.
+     * @param title Title on top of the frame.
+     */
     public TodoFrame(String title) {
         try {
             this.rc = new RestCommunicator();
@@ -147,7 +215,9 @@ public class TodoFrame extends JFrame implements ActionListener {
         this.setVisible(true);
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == this.loadAllLists) {
@@ -167,6 +237,12 @@ public class TodoFrame extends JFrame implements ActionListener {
         }
     }
 
+    /**
+     * @deprecated
+     * Used to change host and port on RestCommunicator object. Will be used again, when the Menubar works.
+     * @param host Host the Rest API is on.
+     * @param port Port the Rest API is on.
+     */
     private void changeApiSettings(String host, int port) {
         this.rc.setHost(host);
         this.rc.setPort(port);
@@ -204,7 +280,7 @@ public class TodoFrame extends JFrame implements ActionListener {
 
     /**
      * Updates the private classmember {@link #errorInfo} and sets it's text to be message.
-     * @param message
+     * @param message Message that is to be shown in {@link #errorInfo}.
      */
     private void updateErrorInfo(String message) {
         this.errorInfo.setText(message);
@@ -212,10 +288,11 @@ public class TodoFrame extends JFrame implements ActionListener {
 
     /**
      * Callback function for the button that retrieves all existing todolists from the API.
+     * Deletes the entire {@link #todoLists} Array, fills it with the new information from the api, 
+     * then clears {@link #dlm} and fills it with the entries from {@link #todoLists}.
      */
     private void getAllLists() {
         ResponseData rd;
-        this.dlm.removeAllElements();
 
         try {
             HashMap<String, String> dummy = new HashMap<String, String>();
@@ -234,7 +311,11 @@ public class TodoFrame extends JFrame implements ActionListener {
         if (rd.getStatusCode() != 200) {
             this.updateErrorInfo("Failed to get all lists, statuscode = " + rd.getStatusCode());
             return;
-        } 
+        }
+        // TODO see, if this does what I hope it does.
+        this.todoLists.clear();
+        this.dlm.removeAllElements();
+
         for (int i = 0; i < rd.getEntries().length; i++) {
             this.todoLists.add(new HashMap<String,String>());
             this.todoLists.get(i).put("name", rd.getEntries()[i].getName());
@@ -249,6 +330,13 @@ public class TodoFrame extends JFrame implements ActionListener {
         this.entries.setModel(this.dlm);
     }
 
+    /**
+     * Opens a new AddWindow, in which the user is supposed to enter the information on the new list.
+     * If that window is closed with the save button, the name the user input is retrieved from the AddWindow
+     * and the {@link #rc} sends a request to the API for a new list.
+     * If the call was successful, the information from the API Response (UUID and name
+     * of the new list) are put into {@link #todoLists} and the {@link #dlm} is updated.
+     */
     private void addLists() {
         AddWindow add = new AddWindow(this, "Neue Liste", "", "", false);
 
@@ -288,6 +376,13 @@ public class TodoFrame extends JFrame implements ActionListener {
         this.updateDlm();
     }
 
+    /**
+     * Gets the current selection in {@link #entries}. Gets the UUID of the selection from {@link #todoLists}
+     * and sends an API call via {@link #rc}, to delete the list with that UUID. Entries of the list are ignored,
+     * as the API deletes them itself.
+     * If the Response has a 200 Statuscode, the selected entry gets removed from {@link #entries} and the dlm is
+     * updated.
+     */
     private void deleteLists() {
         int index = this.entries.getSelectedIndex();
         if (index == -1) return;
@@ -317,6 +412,10 @@ public class TodoFrame extends JFrame implements ActionListener {
         this.updateDlm();
     }
 
+    /**
+     * Updates {@link #dlm} by removing all it's elements, then iterating through {@link #todoLists}
+     * and adding every element's name to the {@link #dlm}.
+     */
     private void updateDlm() {
         this.dlm.removeAllElements();
 

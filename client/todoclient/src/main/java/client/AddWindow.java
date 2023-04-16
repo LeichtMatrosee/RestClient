@@ -18,7 +18,7 @@ import javax.swing.UIManager;
 /**
  * Class that represents a dialog, that is opened, whenever a new todo-list or entry is created
  * or when an entry is edited.
- * @author Gerrit Koppe
+ * @author LeichtMatrosee
  * @version 1.0
  */
 public class AddWindow extends JDialog implements ActionListener {

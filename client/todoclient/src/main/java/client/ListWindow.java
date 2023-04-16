@@ -21,7 +21,7 @@ import javax.swing.UIManager;
 
 /**
  * Class represents the dialog to edit todo-lists. Shows todo-list information, as well as entries.
- * @author Gerrit Koppe
+ * @author LeichtMatrosee
  * @version 1.0
  */
 public class ListWindow extends JDialog implements ActionListener {
