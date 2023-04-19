@@ -139,7 +139,7 @@ public class ListWindow extends JDialog implements ActionListener {
         this.setResizable(true);
         this.setLayout(new BorderLayout());
         this.setTitle(title);
-        this.setSize(600,600);
+        this.setSize(500,500);
 
         // Button Panel Config
         this.buttonPanel = new JPanel();
@@ -314,6 +314,7 @@ public class ListWindow extends JDialog implements ActionListener {
         this.listName = newName;
         this.updateInfoMessage("Listeninformationen aktualisiert");
         ActionEvent e = new ActionEvent(this.updateName, ActionEvent.ACTION_PERFORMED, "updateNowDude");
+        this.setTitle(newName);
         for (ActionListener a : this.updateName.getActionListeners()) {
             if (a.equals(this.getParent())) {
                 a.actionPerformed(e);

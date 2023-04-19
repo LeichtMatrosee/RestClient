@@ -1,6 +1,7 @@
 package client;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -96,10 +97,15 @@ public class AddWindow extends JDialog implements ActionListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        this.setSize(600, 600);
+        this.setSize(400, 400);
         this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         this.setResizable(true);
         this.setLayout(new BorderLayout());
+        if (title.equals("")) {
+            this.setTitle("Neue" + (withDesc ? "r Eintrag" : " Liste"));
+        } else {
+            this.setTitle(title);
+        }
 
         this.buttonPanel = new JPanel();
         this.buttonPanel.setLayout(new FlowLayout());
@@ -115,12 +121,14 @@ public class AddWindow extends JDialog implements ActionListener {
         this.editPanel = new JPanel(new GridLayout(2, 2, 20, 20));
         
         this.nameField = new JTextField(name.equals("") ? "Namen eintragen": name);
+        this.nameField.setPreferredSize(new Dimension(30, 1));
         this.name = new JLabel("Name");
         this.editPanel.add(this.name);
         this.editPanel.add(this.nameField);
         
         if (withDesc) {
             this.descriptionField = new JTextArea(desc.equals("") ? "Beschreibung eintragen" : desc);
+            this.descriptionField.setLineWrap(true);
             this.description = new JLabel("Beschreibung");
             this.editPanel.add(this.description);
             this.editPanel.add(this.descriptionField);
@@ -135,7 +143,6 @@ public class AddWindow extends JDialog implements ActionListener {
         this.add(this.titlePanel, BorderLayout.NORTH);
         this.add(this.buttonPanel, BorderLayout.SOUTH);
         this.add(this.editPanel);
-        this.pack();
 
         this.setVisible(true);
     }
